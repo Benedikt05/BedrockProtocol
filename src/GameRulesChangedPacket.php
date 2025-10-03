@@ -38,11 +38,11 @@ class GameRulesChangedPacket extends DataPacket implements ClientboundPacket{
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->gameRules = $in->getGameRules();
+		$this->gameRules = $in->getGameRules(false);
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putGameRules($this->gameRules);
+		$out->putGameRules($this->gameRules, false);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

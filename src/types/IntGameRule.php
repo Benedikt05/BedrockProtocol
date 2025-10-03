@@ -32,11 +32,11 @@ final class IntGameRule extends GameRule{
 		return $this->value;
 	}
 
-	public function encode(PacketSerializer $out) : void{
-		$out->putUnsignedVarInt($this->value);
+	public function encode(PacketSerializer $out, bool $isStartGame) : void{
+		$isStartGame ? $out->putUnsignedVarInt($this->value) : $out->putLInt($this->value);
 	}
 
-	public static function decode(PacketSerializer $in, bool $isPlayerModifiable) : self{
-		return new self($in->getUnsignedVarInt(), $isPlayerModifiable);
+	public static function decode(PacketSerializer $in, bool $isPlayerModifiable, bool $isStartGame) : self{
+		return new self($isStartGame ? $in->getUnsignedVarInt() : $in->getLInt(), $isPlayerModifiable);
 	}
 }

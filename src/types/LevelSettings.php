@@ -122,7 +122,7 @@ final class LevelSettings{
 		$this->platformBroadcastMode = $in->getVarInt();
 		$this->commandsEnabled = $in->getBool();
 		$this->isTexturePacksRequired = $in->getBool();
-		$this->gameRules = $in->getGameRules();
+		$this->gameRules = $in->getGameRules(true);
 		$this->experiments = Experiments::read($in);
 		$this->hasBonusChestEnabled = $in->getBool();
 		$this->hasStartWithMapEnabled = $in->getBool();
@@ -177,7 +177,7 @@ final class LevelSettings{
 		$out->putVarInt($this->platformBroadcastMode);
 		$out->putBool($this->commandsEnabled);
 		$out->putBool($this->isTexturePacksRequired);
-		$out->putGameRules($this->gameRules);
+		$out->putGameRules($this->gameRules, true);
 		$this->experiments->write($out);
 		$out->putBool($this->hasBonusChestEnabled);
 		$out->putBool($this->hasStartWithMapEnabled);

@@ -25,5 +25,5 @@ abstract class GameRule{
 
 	abstract public function getTypeId() : int;
 
-	abstract public function encode(PacketSerializer $out) : void;
+	abstract public function encode(PacketSerializer $out, bool $isStartGame) : void;
 }

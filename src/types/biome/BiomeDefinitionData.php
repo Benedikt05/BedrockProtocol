@@ -30,10 +30,7 @@ final class BiomeDefinitionData{
 		private int $id,
 		private float $temperature,
 		private float $downfall,
-		private float $redSporeDensity,
-		private float $blueSporeDensity,
-		private float $ashDensity,
-		private float $whiteAshDensity,
+		private float $foliageSnow,
 		private float $depth,
 		private float $scale,
 		private Color $mapWaterColor,
@@ -50,13 +47,7 @@ final class BiomeDefinitionData{
 
 	public function getDownfall() : float{ return $this->downfall; }
 
-	public function getRedSporeDensity() : float{ return $this->redSporeDensity; }
-
-	public function getBlueSporeDensity() : float{ return $this->blueSporeDensity; }
-
-	public function getAshDensity() : float{ return $this->ashDensity; }
-
-	public function getWhiteAshDensity() : float{ return $this->whiteAshDensity; }
+	public function getFoliageSnow() : float{ return $this->foliageSnow; }
 
 	public function getDepth() : float{ return $this->depth; }
 
@@ -79,10 +70,7 @@ final class BiomeDefinitionData{
 		$id = $in->getLShort();
 		$temperature = $in->getLFloat();
 		$downfall = $in->getLFloat();
-		$redSporeDensity = $in->getLFloat();
-		$blueSporeDensity = $in->getLFloat();
-		$ashDensity = $in->getLFloat();
-		$whiteAshDensity = $in->getLFloat();
+		$foliageSnow = $in->getLFloat();
 		$depth = $in->getLFloat();
 		$scale = $in->getLFloat();
 		$mapWaterColor = Color::fromARGB($in->getLInt());
@@ -103,10 +91,7 @@ final class BiomeDefinitionData{
 			$id,
 			$temperature,
 			$downfall,
-			$redSporeDensity,
-			$blueSporeDensity,
-			$ashDensity,
-			$whiteAshDensity,
+			$foliageSnow,
 			$depth,
 			$scale,
 			$mapWaterColor,
@@ -121,10 +106,7 @@ final class BiomeDefinitionData{
 		$out->putLShort($this->id);
 		$out->putLFloat($this->temperature);
 		$out->putLFloat($this->downfall);
-		$out->putLFloat($this->redSporeDensity);
-		$out->putLFloat($this->blueSporeDensity);
-		$out->putLFloat($this->ashDensity);
-		$out->putLFloat($this->whiteAshDensity);
+		$out->putLFloat($this->foliageSnow);
 		$out->putLFloat($this->depth);
 		$out->putLFloat($this->scale);
 		$out->putLInt($this->mapWaterColor->toARGB());

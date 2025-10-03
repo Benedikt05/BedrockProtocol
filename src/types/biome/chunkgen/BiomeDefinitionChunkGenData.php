@@ -24,6 +24,7 @@ final class BiomeDefinitionChunkGenData{
 		private ?BiomeMountainParamsData $mountainParams,
 		private ?BiomeSurfaceMaterialAdjustmentData $surfaceMaterialAdjustment,
 		private ?BiomeSurfaceMaterialData $surfaceMaterial,
+		private bool $defaultOverworldSurface,
 		private bool $swampSurface,
 		private bool $frozenOceanSurface,
 		private bool $theEndSurface,
@@ -43,6 +44,8 @@ final class BiomeDefinitionChunkGenData{
 	public function getSurfaceMaterialAdjustment() : ?BiomeSurfaceMaterialAdjustmentData{ return $this->surfaceMaterialAdjustment; }
 
 	public function getSurfaceMaterial() : ?BiomeSurfaceMaterialData{ return $this->surfaceMaterial; }
+
+	public function hasDefaultOverworldSurface() : bool{ return $this->defaultOverworldSurface; }
 
 	public function hasSwampSurface() : bool{ return $this->swampSurface; }
 
@@ -66,6 +69,7 @@ final class BiomeDefinitionChunkGenData{
 		$mountainParams = $in->readOptional(fn() => BiomeMountainParamsData::read($in));
 		$surfaceMaterialAdjustment = $in->readOptional(fn() => BiomeSurfaceMaterialAdjustmentData::read($in));
 		$surfaceMaterial = $in->readOptional(fn() => BiomeSurfaceMaterialData::read($in));
+		$defaultOverworldSurface = $in->getBool();
 		$swampSurface = $in->getBool();
 		$frozenOceanSurface = $in->getBool();
 		$theEndSurface = $in->getBool();
@@ -81,6 +85,7 @@ final class BiomeDefinitionChunkGenData{
 			$mountainParams,
 			$surfaceMaterialAdjustment,
 			$surfaceMaterial,
+			$defaultOverworldSurface,
 			$swampSurface,
 			$frozenOceanSurface,
 			$theEndSurface,
@@ -98,6 +103,7 @@ final class BiomeDefinitionChunkGenData{
 		$out->writeOptional($this->mountainParams, fn(BiomeMountainParamsData $mountainParams) => $mountainParams->write($out));
 		$out->writeOptional($this->surfaceMaterialAdjustment, fn(BiomeSurfaceMaterialAdjustmentData $surfaceMaterialAdjustment) => $surfaceMaterialAdjustment->write($out));
 		$out->writeOptional($this->surfaceMaterial, fn(BiomeSurfaceMaterialData $surfaceMaterial) => $surfaceMaterial->write($out));
+		$out->putBool($this->defaultOverworldSurface);
 		$out->putBool($this->swampSurface);
 		$out->putBool($this->frozenOceanSurface);
 		$out->putBool($this->theEndSurface);

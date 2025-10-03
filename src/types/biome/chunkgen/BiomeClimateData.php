@@ -21,10 +21,6 @@ final class BiomeClimateData{
 	public function __construct(
 		private float $temperature,
 		private float $downfall,
-		private float $redSporeDensity,
-		private float $blueSporeDensity,
-		private float $ashDensity,
-		private float $whiteAshDensity,
 		private float $snowAccumulationMin,
 		private float $snowAccumulationMax,
 	){}
@@ -33,14 +29,6 @@ final class BiomeClimateData{
 
 	public function getDownfall() : float{ return $this->downfall; }
 
-	public function getRedSporeDensity() : float{ return $this->redSporeDensity; }
-
-	public function getBlueSporeDensity() : float{ return $this->blueSporeDensity; }
-
-	public function getAshDensity() : float{ return $this->ashDensity; }
-
-	public function getWhiteAshDensity() : float{ return $this->whiteAshDensity; }
-
 	public function getSnowAccumulationMin() : float{ return $this->snowAccumulationMin; }
 
 	public function getSnowAccumulationMax() : float{ return $this->snowAccumulationMax; }
@@ -48,20 +36,12 @@ final class BiomeClimateData{
 	public static function read(PacketSerializer $in) : self{
 		$temperature = $in->getLFloat();
 		$downfall = $in->getLFloat();
-		$redSporeDensity = $in->getLFloat();
-		$blueSporeDensity = $in->getLFloat();
-		$ashDensity = $in->getLFloat();
-		$whiteAshDensity = $in->getLFloat();
 		$snowAccumulationMin = $in->getLFloat();
 		$snowAccumulationMax = $in->getLFloat();
 
 		return new self(
 			$temperature,
 			$downfall,
-			$redSporeDensity,
-			$blueSporeDensity,
-			$ashDensity,
-			$whiteAshDensity,
 			$snowAccumulationMin,
 			$snowAccumulationMax
 		);
@@ -70,10 +50,6 @@ final class BiomeClimateData{
 	public function write(PacketSerializer $out) : void{
 		$out->putLFloat($this->temperature);
 		$out->putLFloat($this->downfall);
-		$out->putLFloat($this->redSporeDensity);
-		$out->putLFloat($this->blueSporeDensity);
-		$out->putLFloat($this->ashDensity);
-		$out->putLFloat($this->whiteAshDensity);
 		$out->putLFloat($this->snowAccumulationMin);
 		$out->putFloat($this->snowAccumulationMax);
 	}

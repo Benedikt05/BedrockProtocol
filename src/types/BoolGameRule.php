@@ -32,7 +32,7 @@ final class BoolGameRule extends GameRule{
 		return $this->value;
 	}
 
-	public function encode(PacketSerializer $out) : void{
+	public function encode(PacketSerializer $out, bool $isStartGame) : void{
 		$out->putBool($this->value);
 	}
 
