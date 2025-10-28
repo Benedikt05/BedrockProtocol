@@ -16,17 +16,18 @@ namespace pocketmine\network\mcpe\protocol;
 
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\types\ShowStoreOfferRedirectType;
+use Ramsey\Uuid\UuidInterface;
 
 class ShowStoreOfferPacket extends DataPacket implements ClientboundPacket{
 	public const NETWORK_ID = ProtocolInfo::SHOW_STORE_OFFER_PACKET;
 
-	public string $offerId;
+	public UuidInterface $offerId;
 	public ShowStoreOfferRedirectType $redirectType;
 
 	/**
 	 * @generate-create-func
 	 */
-	public static function create(string $offerId, ShowStoreOfferRedirectType $redirectType) : self{
+	public static function create(UuidInterface $offerId, ShowStoreOfferRedirectType $redirectType) : self{
 		$result = new self;
 		$result->offerId = $offerId;
 		$result->redirectType = $redirectType;
@@ -34,12 +35,12 @@ class ShowStoreOfferPacket extends DataPacket implements ClientboundPacket{
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->offerId = $in->getString();
+		$this->offerId = $in->getUUID();
 		$this->redirectType = ShowStoreOfferRedirectType::fromPacket($in->getByte());
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putString($this->offerId);
+		$out->putUUID($this->offerId);
 		$out->putByte($this->redirectType->value);
 	}
 
