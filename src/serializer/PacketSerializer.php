@@ -614,25 +614,19 @@ class PacketSerializer extends BinaryStream{
 	public function getCommandOriginData() : CommandOriginData{
 		$result = new CommandOriginData();
 
-		$result->type = $this->getUnsignedVarInt();
+		$result->type = $this->getString();
 		$result->uuid = $this->getUUID();
 		$result->requestId = $this->getString();
-
-		if($result->type === CommandOriginData::ORIGIN_DEV_CONSOLE or $result->type === CommandOriginData::ORIGIN_TEST){
-			$result->playerActorUniqueId = $this->getVarLong();
-		}
+		$result->playerActorUniqueId = $this->getVarLong();
 
 		return $result;
 	}
 
 	public function putCommandOriginData(CommandOriginData $data) : void{
-		$this->putUnsignedVarInt($data->type);
+		$this->putString($data->type);
 		$this->putUUID($data->uuid);
 		$this->putString($data->requestId);
-
-		if($data->type === CommandOriginData::ORIGIN_DEV_CONSOLE or $data->type === CommandOriginData::ORIGIN_TEST){
-			$this->putVarLong($data->playerActorUniqueId);
-		}
+		$this->putVarLong($data->playerActorUniqueId);
 	}
 
 	public function getStructureSettings() : StructureSettings{

@@ -30,6 +30,7 @@ class MobEffectPacket extends DataPacket implements ClientboundPacket{
 	public bool $particles = true;
 	public int $duration = 0;
 	public int $tick = 0;
+	public bool $ambient = false;
 
 	/**
 	 * @generate-create-func
@@ -42,6 +43,7 @@ class MobEffectPacket extends DataPacket implements ClientboundPacket{
 		bool $particles,
 		int $duration,
 		int $tick,
+		bool $ambient,
 	) : self{
 		$result = new self;
 		$result->actorRuntimeId = $actorRuntimeId;
@@ -51,15 +53,16 @@ class MobEffectPacket extends DataPacket implements ClientboundPacket{
 		$result->particles = $particles;
 		$result->duration = $duration;
 		$result->tick = $tick;
+		$result->ambient = $ambient;
 		return $result;
 	}
 
-	public static function add(int $actorRuntimeId, bool $replace, int $effectId, int $amplifier, bool $particles, int $duration, int $tick) : self{
-		return self::create($actorRuntimeId, $replace ? self::EVENT_MODIFY : self::EVENT_ADD, $effectId, $amplifier, $particles, $duration, $tick);
+	public static function add(int $actorRuntimeId, bool $replace, int $effectId, int $amplifier, bool $particles, int $duration, int $tick, bool $ambient = false) : self{
+		return self::create($actorRuntimeId, $replace ? self::EVENT_MODIFY : self::EVENT_ADD, $effectId, $amplifier, $particles, $duration, $tick, $ambient);
 	}
 
 	public static function remove(int $actorRuntimeId, int $effectId, int $tick) : self{
-		return self::create($actorRuntimeId, self::EVENT_REMOVE, $effectId, 0, false, 0, $tick);
+		return self::create($actorRuntimeId, self::EVENT_REMOVE, $effectId, 0, false, 0, $tick, false);
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
@@ -70,6 +73,7 @@ class MobEffectPacket extends DataPacket implements ClientboundPacket{
 		$this->particles = $in->getBool();
 		$this->duration = $in->getVarInt();
 		$this->tick = $in->getUnsignedVarLong();
+		$this->ambient = $in->getBool();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -80,6 +84,7 @@ class MobEffectPacket extends DataPacket implements ClientboundPacket{
 		$out->putBool($this->particles);
 		$out->putVarInt($this->duration);
 		$out->putUnsignedVarLong($this->tick);
+		$out->putBool($this->ambient);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

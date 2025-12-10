@@ -221,7 +221,7 @@ class AvailableCommandsPacket extends DataPacket implements ClientboundPacket{
 		$listSize = count($enumValueList);
 
 		for($i = 0, $count = $in->getUnsignedVarInt(); $i < $count; ++$i){
-			$index = $this->getEnumValueIndex($listSize, $in);
+			$index = $in->getLInt();
 			if(!isset($enumValueList[$index])){
 				throw new PacketDecodeException("Invalid enum value index $index");
 			}
@@ -260,7 +260,7 @@ class AvailableCommandsPacket extends DataPacket implements ClientboundPacket{
 			if(!isset($enumValueMap[$value])){
 				throw new \LogicException("Enum value '$value' doesn't have a value index");
 			}
-			$this->putEnumValueIndex($enumValueMap[$value], $listSize, $out);
+			$out->putLInt($enumValueMap[$value]);
 		}
 	}
 
@@ -271,29 +271,6 @@ class AvailableCommandsPacket extends DataPacket implements ClientboundPacket{
 		$out->putUnsignedVarInt(count($values));
 		foreach($values as $value){
 			$out->putString($value);
-		}
-	}
-
-	/**
-	 * @throws BinaryDataException
-	 */
-	protected function getEnumValueIndex(int $valueCount, PacketSerializer $in) : int{
-		if($valueCount < 256){
-			return $in->getByte();
-		}elseif($valueCount < 65536){
-			return $in->getLShort();
-		}else{
-			return $in->getLInt();
-		}
-	}
-
-	protected function putEnumValueIndex(int $index, int $valueCount, PacketSerializer $out) : void{
-		if($valueCount < 256){
-			$out->putByte($index);
-		}elseif($valueCount < 65536){
-			$out->putLShort($index);
-		}else{
-			$out->putLInt($index);
 		}
 	}
 
@@ -353,7 +330,7 @@ class AvailableCommandsPacket extends DataPacket implements ClientboundPacket{
 		$name = $in->getString();
 		$description = $in->getString();
 		$flags = $in->getLShort();
-		$permission = $in->getByte();
+		$permission = $in->getString();
 		$aliases = $enums[$in->getLInt()] ?? null;
 
 		$chainedSubCommandData = [];
@@ -407,7 +384,7 @@ class AvailableCommandsPacket extends DataPacket implements ClientboundPacket{
 		$out->putString($data->name);
 		$out->putString($data->description);
 		$out->putLShort($data->flags);
-		$out->putByte($data->permission);
+		$out->putString(is_int($data->permission) ? "any" : $data->permission);
 
 		if($data->aliases !== null){
 			$out->putLInt($enumIndexes[$data->aliases->getName()] ?? -1);

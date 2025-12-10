@@ -14,7 +14,9 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol;
 
+use InvalidArgumentException;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use UnexpectedValueException;
 use function count;
 
 class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPacket{
@@ -33,6 +35,10 @@ class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPac
 	public const TYPE_JSON = 10;
 	public const TYPE_JSON_ANNOUNCEMENT = 11;
 
+	private const ONEOF_MESSAGE_ONLY = 0;
+	private const ONEOF_AUTHOR_AND_MESSAGE = 1;
+	private const ONEOF_MESSAGE_AND_PARAMS = 2;
+
 	public int $type;
 	public bool $needsTranslation = false;
 	public string $sourceName;
@@ -41,7 +47,7 @@ class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPac
 	public array $parameters = [];
 	public string $xboxUserId = "";
 	public string $platformChatId = "";
-	public string $filteredMessage = "";
+	public ?string $filteredMessage = null;
 
 	private static function messageOnly(int $type, string $message) : self{
 		$result = new self;
@@ -96,26 +102,40 @@ class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPac
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->type = $in->getByte();
 		$this->needsTranslation = $in->getBool();
-		switch($this->type){
-			case self::TYPE_CHAT:
-			case self::TYPE_WHISPER:
-			/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_ANNOUNCEMENT:
-				$this->sourceName = $in->getString();
-			case self::TYPE_RAW:
-			case self::TYPE_TIP:
-			case self::TYPE_SYSTEM:
-			case self::TYPE_JSON_WHISPER:
-			case self::TYPE_JSON:
-			case self::TYPE_JSON_ANNOUNCEMENT:
+		$oneOfType = $in->getByte();
+		switch($oneOfType){
+			case self::ONEOF_MESSAGE_ONLY:
+				for($i = 0; $i < 6; $i++){
+					$in->getString(); //Read strings: raw, tip, systemMessage, textObjectWhisper, textObjectAnnouncement, textObject
+				}
+				break;
+			case self::ONEOF_AUTHOR_AND_MESSAGE:
+				for($i = 0; $i < 3; $i++){
+					$in->getString(); //Read strings: chat, whisper, announcement
+				}
+				break;
+			case self::ONEOF_MESSAGE_AND_PARAMS:
+				for($i = 0; $i < 3; $i++){
+					$in->getString(); //Read strings: translate, popup, jukeboxPopup
+				}
+				break;
+			default:
+				throw new UnexpectedValueException("Not oneOf<MessageOnly, AuthorAndMessage, MessageAndParams>");
+		}
+
+		$this->type = $in->getByte();
+		switch($oneOfType){
+			case self::ONEOF_MESSAGE_ONLY:
 				$this->message = $in->getString();
 				break;
 
-			case self::TYPE_TRANSLATION:
-			case self::TYPE_POPUP:
-			case self::TYPE_JUKEBOX_POPUP:
+			case self::ONEOF_AUTHOR_AND_MESSAGE:
+				$this->sourceName = $in->getString();
+				$this->message = $in->getString();
+				break;
+
+			case self::ONEOF_MESSAGE_AND_PARAMS:
 				$this->message = $in->getString();
 				$count = $in->getUnsignedVarInt();
 				for($i = 0; $i < $count; ++$i){
@@ -126,31 +146,52 @@ class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPac
 
 		$this->xboxUserId = $in->getString();
 		$this->platformChatId = $in->getString();
-		$this->filteredMessage = $in->getString();
+		$this->filteredMessage = $in->readOptional(fn() => $in->getString());
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putByte($this->type);
 		$out->putBool($this->needsTranslation);
-		switch($this->type){
-			case self::TYPE_CHAT:
-			case self::TYPE_WHISPER:
-			/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_ANNOUNCEMENT:
-				$out->putString($this->sourceName);
-			case self::TYPE_RAW:
-			case self::TYPE_TIP:
-			case self::TYPE_SYSTEM:
-			case self::TYPE_JSON_WHISPER:
-			case self::TYPE_JSON:
-			case self::TYPE_JSON_ANNOUNCEMENT:
-				$out->putString($this->message);
+
+		$oneOfType = $this->getOneOfType($this->type);
+
+		$out->putByte($oneOfType);
+
+		switch($oneOfType){
+			case self::ONEOF_MESSAGE_ONLY:
+				$out->putString("raw");
+				$out->putString("tip");
+				$out->putString("systemMessage");
+				$out->putString("textObjectWhisper");
+				$out->putString("textObjectAnnouncement");
+				$out->putString("textObject");
+				break;
+			case self::ONEOF_AUTHOR_AND_MESSAGE:
+				$out->putString("chat");
+				$out->putString("whisper");
+				$out->putString("announcement");
+				break;
+			case self::ONEOF_MESSAGE_AND_PARAMS:
+				$out->putString("translate");
+				$out->putString("popup");
+				$out->putString("jukeboxPopup");
+				break;
+		}
+
+		$out->putByte($this->type);
+
+		$message = $this->message === "" ? " " : $this->message;
+		switch($oneOfType){
+			case self::ONEOF_MESSAGE_ONLY:
+				$out->putString($message);
 				break;
 
-			case self::TYPE_TRANSLATION:
-			case self::TYPE_POPUP:
-			case self::TYPE_JUKEBOX_POPUP:
-				$out->putString($this->message);
+			case self::ONEOF_AUTHOR_AND_MESSAGE:
+				$out->putString($this->sourceName);
+				$out->putString($message);
+				break;
+
+			case self::ONEOF_MESSAGE_AND_PARAMS:
+				$out->putString($message);
 				$out->putUnsignedVarInt(count($this->parameters));
 				foreach($this->parameters as $p){
 					$out->putString($p);
@@ -160,8 +201,28 @@ class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPac
 
 		$out->putString($this->xboxUserId);
 		$out->putString($this->platformChatId);
-		$out->putString($this->filteredMessage);
+		$out->writeOptional($this->filteredMessage, fn(string $filteredMessage) => $out->putString($filteredMessage));
 	}
+
+	protected function getOneOfType(int $textType) : int{
+		return match ($textType) {
+			self::TYPE_CHAT,
+			self::TYPE_WHISPER,
+			self::TYPE_ANNOUNCEMENT => self::ONEOF_AUTHOR_AND_MESSAGE,
+			self::TYPE_TRANSLATION,
+			self::TYPE_POPUP,
+			self::TYPE_JUKEBOX_POPUP => self::ONEOF_MESSAGE_AND_PARAMS,
+			self::TYPE_RAW,
+			self::TYPE_TIP,
+			self::TYPE_SYSTEM,
+			self::TYPE_JSON,
+			self::TYPE_JSON_WHISPER,
+			self::TYPE_JSON_ANNOUNCEMENT => self::ONEOF_MESSAGE_ONLY,
+
+			default => throw new InvalidArgumentException("Unsupported TextType " . $textType),
+		};
+	}
+
 
 	public function handle(PacketHandlerInterface $handler) : bool{
 		return $handler->handleText($this);

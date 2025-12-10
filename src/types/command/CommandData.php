@@ -23,7 +23,7 @@ class CommandData{
 		public string $name,
 		public string $description,
 		public int $flags,
-		public int $permission,
+		public string|int $permission,
 		public ?CommandEnum $aliases,
 		public array $overloads,
 		public array $chainedSubCommandData

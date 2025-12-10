@@ -99,7 +99,7 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		UuidInterface $worldTemplateId,
 		bool $enableClientSideChunkGeneration,
 		bool $blockNetworkIdsAreHashes,
-		bool $enableTickDeathSystems,
+		bool $unused,
 		NetworkPermissions $networkPermissions,
 		array $blockPalette,
 		int $blockPaletteChecksum,
@@ -126,7 +126,6 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$result->worldTemplateId = $worldTemplateId;
 		$result->enableClientSideChunkGeneration = $enableClientSideChunkGeneration;
 		$result->blockNetworkIdsAreHashes = $blockNetworkIdsAreHashes;
-		$result->enableTickDeathSystems = $enableTickDeathSystems;
 		$result->networkPermissions = $networkPermissions;
 		$result->blockPalette = $blockPalette;
 		$result->blockPaletteChecksum = $blockPaletteChecksum;
@@ -169,7 +168,6 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$this->worldTemplateId = $in->getUUID();
 		$this->enableClientSideChunkGeneration = $in->getBool();
 		$this->blockNetworkIdsAreHashes = $in->getBool();
-		$this->enableTickDeathSystems = $in->getBool();
 		$this->networkPermissions = NetworkPermissions::decode($in);
 	}
 
@@ -208,7 +206,6 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$out->putUUID($this->worldTemplateId);
 		$out->putBool($this->enableClientSideChunkGeneration);
 		$out->putBool($this->blockNetworkIdsAreHashes);
-		$out->putBool($this->enableTickDeathSystems);
 		$this->networkPermissions->encode($out);
 	}
 
