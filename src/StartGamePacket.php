@@ -57,6 +57,10 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 	public bool $blockNetworkIdsAreHashes = false; //new in 1.19.80, possibly useful for multi version
 	public bool $enableTickDeathSystems = false;
 	public NetworkPermissions $networkPermissions;
+	public string $serverIdentifier = "";
+	public string $scenarioIdentifier = "";
+	public string $worldIdentifier = "";
+	public string $ownerIdentifier = "";
 
 	/**
 	 * @var BlockPaletteEntry[]
@@ -169,6 +173,13 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$this->enableClientSideChunkGeneration = $in->getBool();
 		$this->blockNetworkIdsAreHashes = $in->getBool();
 		$this->networkPermissions = NetworkPermissions::decode($in);
+		if($in->getBool()){
+			$in->getBool();
+		}
+		$this->serverIdentifier = $in->getString();
+		$this->scenarioIdentifier = $in->getString();
+		$this->worldIdentifier = $in->getString();
+		$this->ownerIdentifier = $in->getString();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -207,6 +218,11 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$out->putBool($this->enableClientSideChunkGeneration);
 		$out->putBool($this->blockNetworkIdsAreHashes);
 		$this->networkPermissions->encode($out);
+		$out->putBool(false); //serverJoinInformation
+		$out->putString($this->serverIdentifier);
+		$out->putString($this->scenarioIdentifier);
+		$out->putString($this->worldIdentifier);
+		$out->putString($this->ownerIdentifier);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

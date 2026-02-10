@@ -103,26 +103,7 @@ class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPac
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->needsTranslation = $in->getBool();
-		$oneOfType = $in->getByte();
-		switch($oneOfType){
-			case self::ONEOF_MESSAGE_ONLY:
-				for($i = 0; $i < 6; $i++){
-					$in->getString(); //Read strings: raw, tip, systemMessage, textObjectWhisper, textObjectAnnouncement, textObject
-				}
-				break;
-			case self::ONEOF_AUTHOR_AND_MESSAGE:
-				for($i = 0; $i < 3; $i++){
-					$in->getString(); //Read strings: chat, whisper, announcement
-				}
-				break;
-			case self::ONEOF_MESSAGE_AND_PARAMS:
-				for($i = 0; $i < 3; $i++){
-					$in->getString(); //Read strings: translate, popup, jukeboxPopup
-				}
-				break;
-			default:
-				throw new UnexpectedValueException("Not oneOf<MessageOnly, AuthorAndMessage, MessageAndParams>");
-		}
+		$oneOfType = $in->getUnsignedVarInt();
 
 		$this->type = $in->getByte();
 		switch($oneOfType){
@@ -156,28 +137,7 @@ class TextPacket extends DataPacket implements ClientboundPacket, ServerboundPac
 
 		$out->putByte($oneOfType);
 
-		switch($oneOfType){
-			case self::ONEOF_MESSAGE_ONLY:
-				$out->putString("raw");
-				$out->putString("tip");
-				$out->putString("systemMessage");
-				$out->putString("textObjectWhisper");
-				$out->putString("textObjectAnnouncement");
-				$out->putString("textObject");
-				break;
-			case self::ONEOF_AUTHOR_AND_MESSAGE:
-				$out->putString("chat");
-				$out->putString("whisper");
-				$out->putString("announcement");
-				break;
-			case self::ONEOF_MESSAGE_AND_PARAMS:
-				$out->putString("translate");
-				$out->putString("popup");
-				$out->putString("jukeboxPopup");
-				break;
-		}
-
-		$out->putByte($this->type);
+		$out->putUnsignedVarInt($this->type);
 
 		$message = $this->message === "" ? " " : $this->message;
 		switch($oneOfType){

@@ -44,7 +44,7 @@ class CommandData{
 		return $this->flags;
 	}
 
-	public function getPermission() : int{
+	public function getPermission() : string|int{
 		return $this->permission;
 	}
 

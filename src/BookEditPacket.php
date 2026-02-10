@@ -25,8 +25,8 @@ class BookEditPacket extends DataPacket implements ServerboundPacket{
 	public const TYPE_SWAP_PAGES = 3;
 	public const TYPE_SIGN_BOOK = 4;
 
-	public int $type;
 	public int $inventorySlot;
+	public int $type;
 	public int $pageNumber;
 	public int $secondaryPageNumber;
 	public string $text;
@@ -36,22 +36,22 @@ class BookEditPacket extends DataPacket implements ServerboundPacket{
 	public string $xuid;
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->type = $in->getByte();
-		$this->inventorySlot = $in->getByte();
+		$this->inventorySlot = $in->getVarInt();
+		$this->type = $in->getUnsignedVarInt();
 
 		switch($this->type){
 			case self::TYPE_REPLACE_PAGE:
 			case self::TYPE_ADD_PAGE:
-				$this->pageNumber = $in->getByte();
+				$this->pageNumber = $in->getVarInt();
 				$this->text = $in->getString();
 				$this->photoName = $in->getString();
 				break;
 			case self::TYPE_DELETE_PAGE:
-				$this->pageNumber = $in->getByte();
+				$this->pageNumber = $in->getVarInt();
 				break;
 			case self::TYPE_SWAP_PAGES:
-				$this->pageNumber = $in->getByte();
-				$this->secondaryPageNumber = $in->getByte();
+				$this->pageNumber = $in->getVarInt();
+				$this->secondaryPageNumber = $in->getVarInt();
 				break;
 			case self::TYPE_SIGN_BOOK:
 				$this->title = $in->getString();
@@ -70,16 +70,16 @@ class BookEditPacket extends DataPacket implements ServerboundPacket{
 		switch($this->type){
 			case self::TYPE_REPLACE_PAGE:
 			case self::TYPE_ADD_PAGE:
-				$out->putByte($this->pageNumber);
+				$out->putVarInt($this->pageNumber);
 				$out->putString($this->text);
 				$out->putString($this->photoName);
 				break;
 			case self::TYPE_DELETE_PAGE:
-				$out->putByte($this->pageNumber);
+				$out->putVarInt($this->pageNumber);
 				break;
 			case self::TYPE_SWAP_PAGES:
-				$out->putByte($this->pageNumber);
-				$out->putByte($this->secondaryPageNumber);
+				$out->putVarInt($this->pageNumber);
+				$out->putVarInt($this->secondaryPageNumber);
 				break;
 			case self::TYPE_SIGN_BOOK:
 				$out->putString($this->title);
