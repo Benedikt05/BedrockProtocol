@@ -240,6 +240,7 @@ class PacketPool{
 		$this->registerPacket(new PlayerLocationPacket());
 		$this->registerPacket(new ClientboundControlSchemeSetPacket());
 		$this->registerPacket(new ServerScriptDebugDrawerPacket());
+		$this->registerPacket(new PartyChangedPacket());
 	}
 
 	public function registerPacket(Packet $packet) : void{

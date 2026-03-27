@@ -21,30 +21,24 @@ class UpdateClientInputLocksPacket extends DataPacket implements ClientboundPack
 	public const NETWORK_ID = ProtocolInfo::UPDATE_CLIENT_INPUT_LOCKS_PACKET;
 
 	private int $flags;
-	private Vector3 $position;
 
 	/**
 	 * @generate-create-func
 	 */
-	public static function create(int $flags, Vector3 $position) : self{
+	public static function create(int $flags) : self{
 		$result = new self;
 		$result->flags = $flags;
-		$result->position = $position;
 		return $result;
 	}
 
 	public function getFlags() : int{ return $this->flags; }
 
-	public function getPosition() : Vector3{ return $this->position; }
-
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->flags = $in->getUnsignedVarInt();
-		$this->position = $in->getVector3();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putUnsignedVarInt($this->flags);
-		$out->putVector3($this->position);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{
