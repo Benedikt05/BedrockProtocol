@@ -429,24 +429,19 @@ class PacketSerializer extends BinaryStream{
 	}
 
 	/**
-	 * Reads a block position with unsigned Y coordinate.
+	 * Reads a block position with a signed Y coordinate.
 	 *
 	 * @throws BinaryDataException
 	 */
 	public function getBlockPosition() : BlockPosition{
-		$x = $this->getVarInt();
-		$y = Binary::signInt($this->getUnsignedVarInt()); //Y coordinate may be signed, but it's written unsigned :<
-		$z = $this->getVarInt();
-		return new BlockPosition($x, $y, $z);
+		return $this->getSignedBlockPosition();
 	}
 
 	/**
-	 * Writes a block position with unsigned Y coordinate.
+	 * Writes a block position with a signed Y coordinate.
 	 */
 	public function putBlockPosition(BlockPosition $blockPosition) : void{
-		$this->putVarInt($blockPosition->getX());
-		$this->putUnsignedVarInt(Binary::unsignInt($blockPosition->getY())); //Y coordinate may be signed, but it's written unsigned :<
-		$this->putVarInt($blockPosition->getZ());
+		$this->putSignedBlockPosition($blockPosition);
 	}
 
 	/**
