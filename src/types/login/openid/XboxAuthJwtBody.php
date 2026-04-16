@@ -20,6 +20,8 @@ use pocketmine\network\mcpe\protocol\types\login\JwtBodyRfc7519;
  * JsonMapper model for the Xbox Live auth JWT claims as of Bedrock 1.21.100
  */
 final class XboxAuthJwtBody extends JwtBodyRfc7519{
+	public int $ap; // ??
+
 	/** @required */
 	public string $ipt; // Platform type
 
