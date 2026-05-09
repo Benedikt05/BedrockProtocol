@@ -29,6 +29,7 @@ class LevelSoundEventPacket extends DataPacket implements ClientboundPacket, Ser
 	public bool $isBabyMob = false; //...
 	public bool $disableRelativeVolume = false;
 	public int $actorUniqueId = -1;
+	public ?Vector3 $fireAtPosition = null;
 
 	/**
 	 * @generate-create-func
@@ -41,6 +42,7 @@ class LevelSoundEventPacket extends DataPacket implements ClientboundPacket, Ser
 		bool $isBabyMob,
 		bool $disableRelativeVolume,
 		int $actorUniqueId,
+		//?Vector3 $fireAtPosition
 	) : self{
 		$result = new self;
 		$result->sound = $sound;
@@ -50,6 +52,7 @@ class LevelSoundEventPacket extends DataPacket implements ClientboundPacket, Ser
 		$result->isBabyMob = $isBabyMob;
 		$result->disableRelativeVolume = $disableRelativeVolume;
 		$result->actorUniqueId = $actorUniqueId;
+		//$result->fireAtPosition = $fireAtPosition;
 		return $result;
 	}
 
@@ -65,6 +68,7 @@ class LevelSoundEventPacket extends DataPacket implements ClientboundPacket, Ser
 		$this->isBabyMob = $in->getBool();
 		$this->disableRelativeVolume = $in->getBool();
 		$this->actorUniqueId = $in->getLLong(); //WHY IS THIS NON-STANDARD?
+		$this->fireAtPosition = $in->readOptional(fn() => $in->getVector3());
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -75,6 +79,7 @@ class LevelSoundEventPacket extends DataPacket implements ClientboundPacket, Ser
 		$out->putBool($this->isBabyMob);
 		$out->putBool($this->disableRelativeVolume);
 		$out->putLLong($this->actorUniqueId);
+		$out->writeOptional($this->fireAtPosition, fn($fireAtPosition) => $out->putVector3($fireAtPosition));
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{
