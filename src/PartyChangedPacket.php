@@ -14,6 +14,7 @@ class PartyChangedPacket extends DataPacket implements ServerboundPacket{
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->partyId = $in->readOptional(fn() => $in->getString());
+		$in->getBool(); //leader
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{

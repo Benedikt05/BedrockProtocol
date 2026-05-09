@@ -40,14 +40,15 @@ class DisconnectPacket extends DataPacket implements ClientboundPacket, Serverbo
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->reason = $in->getVarInt();
-		$skipMessage = $in->getBool();
+		$skipMessage = $in->getUnsignedVarInt() === 1;
 		$this->message = $skipMessage ? null : $in->getString();
 		$this->filteredMessage = $skipMessage ? null : $in->getString();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putVarInt($this->reason);
-		$out->putBool($skipMessage = $this->message === null && $this->filteredMessage === null);
+		$skipMessage = $this->message === null && $this->filteredMessage === null;
+		$out->putUnsignedVarInt($skipMessage ? 1 : 0);
 		if(!$skipMessage){
 			$out->putString($this->message ?? "");
 			$out->putString($this->filteredMessage ?? "");

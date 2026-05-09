@@ -23,14 +23,14 @@ class InventorySlotPacket extends DataPacket implements ClientboundPacket{
 
 	public int $windowId;
 	public int $inventorySlot;
-	public FullContainerName $containerName;
-	public ItemStackWrapper $storage;
+	public ?FullContainerName $containerName = null;
+	public ?ItemStackWrapper $storage = null;
 	public ItemStackWrapper $item;
 
 	/**
 	 * @generate-create-func
 	 */
-	public static function create(int $windowId, int $inventorySlot, FullContainerName $containerName, ItemStackWrapper $storage, ItemStackWrapper $item) : self{
+	public static function create(int $windowId, int $inventorySlot, ?FullContainerName $containerName, ?ItemStackWrapper $storage, ItemStackWrapper $item) : self{
 		$result = new self;
 		$result->windowId = $windowId;
 		$result->inventorySlot = $inventorySlot;
@@ -43,17 +43,21 @@ class InventorySlotPacket extends DataPacket implements ClientboundPacket{
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->windowId = $in->getUnsignedVarInt();
 		$this->inventorySlot = $in->getUnsignedVarInt();
-		$this->containerName = FullContainerName::read($in);
-		$this->storage = $in->getItemStackWrapper();
+		$this->containerName = $in->getBool() ? FullContainerName::read($in) : null;
+		$this->storage = $in->getBool() ? $in->getItemStackWrapper() : null;
 		$this->item = $in->getItemStackWrapper();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putUnsignedVarInt($this->windowId);
 		$out->putUnsignedVarInt($this->inventorySlot);
-		$this->containerName->write($out);
-		$out->putItemStackWrapper($this->storage);
-		$out->putItemStackWrapper($this->item);
+		$out->putBool($this->containerName !== null);
+		$this->containerName?->write($out);
+		$out->putBool($this->storage !== null);
+		if($this->storage !== null) {
+			$out->putNetworkItemStackDescriptor($this->storage);
+		}
+		$out->putNetworkItemStackDescriptor($this->item);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

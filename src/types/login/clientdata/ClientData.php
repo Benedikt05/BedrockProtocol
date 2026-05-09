@@ -64,6 +64,8 @@ final class ClientData{
 	/** @required */
 	public int $DeviceOS;
 
+	public $FilterProfanity;
+
 	/** @required */
 	public string $GameVersion;
 
@@ -89,6 +91,7 @@ final class ClientData{
 	
 	public string $PartyId;
 
+	public bool $IsPartyLeader;
 	/**
 	 * @var ClientDataPersonaSkinPiece[]
 	 * @required

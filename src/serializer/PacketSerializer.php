@@ -329,6 +329,38 @@ class PacketSerializer extends BinaryStream{
 		}
 	}
 
+	public function getNetworkItemStackDescriptor() : ItemStackWrapper{
+		$id = $this->getSignedLShort();
+		$count = $this->getLShort();
+		$meta = $this->getUnsignedVarInt();
+
+		$hasNetId = $this->getBool();
+		if ($hasNetId) {
+			$this->getUnsignedVarInt(); //variant
+			$stackId = $this->readServerItemStackId();
+		}
+
+		$blockRuntimeId = $this->getUnsignedVarInt();
+		$rawExtraData = $this->getString();
+
+		return new ItemStackWrapper($stackId ?? 0, new ItemStack($id, $meta, $count, $blockRuntimeId, $rawExtraData));
+	}
+
+	public function putNetworkItemStackDescriptor(ItemStackWrapper $itemStackWrapper) : void{
+		$this->putLShort($itemStackWrapper->getItemStack()->getId());
+		$this->putLShort($itemStackWrapper->getItemStack()->getCount());
+		$this->putUnsignedVarInt($itemStackWrapper->getItemStack()->getMeta());
+
+		$this->putBool($hasNetId = $itemStackWrapper->getStackId() !== 0);
+		if($hasNetId){
+			$this->putUnsignedVarInt(0); //variant
+			$this->writeServerItemStackId($itemStackWrapper->getStackId());
+		}
+
+		$this->putUnsignedVarInt($itemStackWrapper->getItemStack()->getBlockRuntimeId());
+		$this->putString($itemStackWrapper->getItemStack()->getRawExtraData());
+	}
+
 	public function getRecipeIngredient() : RecipeIngredient{
 		$descriptorType = $this->getByte();
 		$descriptor = match($descriptorType){
