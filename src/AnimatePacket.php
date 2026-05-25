@@ -45,14 +45,14 @@ class AnimatePacket extends DataPacket implements ClientboundPacket, Serverbound
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->action = $in->getVarInt();
+		$this->action = $in->getByte();
 		$this->actorRuntimeId = $in->getActorRuntimeId();
 		$this->data = $in->getLFloat();
 		$this->swingSource = $in->readOptional($in->getString(...));
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putVarInt($this->action);
+		$out->putByte($this->action);
 		$out->putActorRuntimeId($this->actorRuntimeId);
 		$out->putLFloat($this->data);
 		$out->writeOptional($this->swingSource, $out->putString(...));
