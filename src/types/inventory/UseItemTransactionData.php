@@ -82,31 +82,31 @@ class UseItemTransactionData extends TransactionData{
 		return $this->clientCooldownState;
 	}
 
-	protected function decodeData(PacketSerializer $stream) : void{
-		$this->actionType = $stream->getUnsignedVarInt();
-		$this->triggerType = TriggerType::fromPacket($stream->getUnsignedVarInt());
+	protected function decodeData(PacketSerializer $stream, bool $tr = false) : void{
+		$this->actionType = $tr ? $stream->getVarInt() : $stream->getUnsignedVarInt();
+		$this->triggerType = TriggerType::fromPacket($tr ? $stream->getByte() : $stream->getUnsignedVarInt());
 		$this->blockPosition = $stream->getBlockPosition();
-		$this->face = $stream->getVarInt();
+		$this->face = $tr ? $stream->getByte() : $stream->getVarInt();
 		$this->hotbarSlot = $stream->getVarInt();
-		$this->itemInHand = $stream->getItemStackWrapper();
+		$this->itemInHand = $tr ? $stream->getNetworkItemStackDescriptor() : $stream->getItemStackWrapper();
 		$this->playerPosition = $stream->getVector3();
 		$this->clickPosition = $stream->getVector3();
 		$this->blockRuntimeId = $stream->getUnsignedVarInt();
-		$this->clientInteractPrediction = PredictedResult::fromPacket($stream->getUnsignedVarInt());
+		$this->clientInteractPrediction = PredictedResult::fromPacket($stream->getByte());
 		$this->clientCooldownState = $stream->getByte();
 	}
 
-	protected function encodeData(PacketSerializer $stream) : void{
-		$stream->putUnsignedVarInt($this->actionType);
-		$stream->putUnsignedVarInt($this->triggerType->value);
+	protected function encodeData(PacketSerializer $stream, bool $tr = false) : void{
+		$tr ? $stream->putVarInt($this->actionType) : $stream->putUnsignedVarInt($this->actionType);
+		$tr ? $stream->putByte($this->triggerType->value) : $stream->putUnsignedVarInt($this->triggerType->value);
 		$stream->putBlockPosition($this->blockPosition);
-		$stream->putVarInt($this->face);
+		$tr ? $stream->putByte($this->face) : $stream->putVarInt($this->face);
 		$stream->putVarInt($this->hotbarSlot);
-		$stream->putItemStackWrapper($this->itemInHand);
+		$tr ? $stream->putNetworkItemStackDescriptor($this->itemInHand) : $stream->putItemStackWrapper($this->itemInHand);
 		$stream->putVector3($this->playerPosition);
 		$stream->putVector3($this->clickPosition);
 		$stream->putUnsignedVarInt($this->blockRuntimeId);
-		$stream->putUnsignedVarInt($this->clientInteractPrediction->value);
+		$stream->putByte($this->clientInteractPrediction->value);
 		$stream->putByte($this->clientCooldownState);
 	}
 

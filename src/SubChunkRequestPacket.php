@@ -55,22 +55,22 @@ class SubChunkRequestPacket extends DataPacket implements ServerboundPacket{
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->dimension = $in->getVarInt();
-		$this->basePosition = SubChunkPosition::read($in);
 
 		$this->entries = [];
-		for($i = 0, $count = $in->getLInt(); $i < $count; $i++){
+		for($i = 0, $count = $in->getUnsignedVarInt(); $i < $count; $i++){
 			$this->entries[] = SubChunkPositionOffset::read($in);
 		}
+		$this->basePosition = SubChunkPosition::readCereal($in);
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putVarInt($this->dimension);
-		$this->basePosition->write($out);
 
-		$out->putLInt(count($this->entries));
+		$out->putUnsignedVarInt(count($this->entries));
 		foreach($this->entries as $entry){
 			$entry->write($out);
 		}
+		$this->basePosition->writeCereal($out);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

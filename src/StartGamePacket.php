@@ -218,6 +218,7 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$out->putBool($this->enableClientSideChunkGeneration);
 		$out->putBool($this->blockNetworkIdsAreHashes);
 		$this->networkPermissions->encode($out);
+		$out->putBool(false); //isLoggingChat
 		$out->putBool(false); //serverJoinInformation
 		$out->putString($this->serverIdentifier);
 		$out->putString($this->scenarioIdentifier);

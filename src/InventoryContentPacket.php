@@ -45,20 +45,20 @@ class InventoryContentPacket extends DataPacket implements ClientboundPacket{
 		$this->windowId = $in->getUnsignedVarInt();
 		$count = $in->getUnsignedVarInt();
 		for($i = 0; $i < $count; ++$i){
-			$this->items[] = $in->getItemStackWrapper();
+			$this->items[] = $in->getNetworkItemStackDescriptor();
 		}
 		$this->containerName = FullContainerName::read($in);
-		$this->storage = $in->getItemStackWrapper();
+		$this->storage = $in->getNetworkItemStackDescriptor();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putUnsignedVarInt($this->windowId);
 		$out->putUnsignedVarInt(count($this->items));
 		foreach($this->items as $item){
-			$out->putItemStackWrapper($item);
+			$out->putNetworkItemStackDescriptor($item);
 		}
 		$this->containerName->write($out);
-		$out->putItemStackWrapper($this->storage);
+		$out->putNetworkItemStackDescriptor($this->storage);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

@@ -56,10 +56,14 @@ class InventoryTransactionPacket extends DataPacket implements ClientboundPacket
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->requestId = $in->readLegacyItemStackRequestId();
 		$this->requestChangedSlots = [];
-		if($this->requestId !== 0){
+		if($in->getBool()){
 			for($i = 0, $len = $in->getUnsignedVarInt(); $i < $len; ++$i){
 				$this->requestChangedSlots[] = InventoryTransactionChangedSlotsHack::read($in);
 			}
+		}
+
+		if(!$in->getBool()){
+			throw new PacketDecodeException("Expected transaction type, but got none");
 		}
 
 		$transactionType = $in->getUnsignedVarInt();
@@ -72,12 +76,15 @@ class InventoryTransactionPacket extends DataPacket implements ClientboundPacket
 			ReleaseItemTransactionData::ID => new ReleaseItemTransactionData(),
 			default => throw new PacketDecodeException("Unknown transaction type $transactionType"),
 		};
+		if($in->getBool()){
+			$this->trData->decode($in, true);
+		}
 
-		$this->trData->decode($in);
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->writeLegacyItemStackRequestId($this->requestId);
+		$out->putBool($this->requestId !== 0);
 		if($this->requestId !== 0){
 			$out->putUnsignedVarInt(count($this->requestChangedSlots));
 			foreach($this->requestChangedSlots as $changedSlots){
@@ -85,9 +92,11 @@ class InventoryTransactionPacket extends DataPacket implements ClientboundPacket
 			}
 		}
 
+		$out->putBool(true);
 		$out->putUnsignedVarInt($this->trData->getTypeId());
 
-		$this->trData->encode($out);
+		$out->putBool(true);
+		$this->trData->encode($out, true);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

@@ -46,139 +46,82 @@ class BossEventPacket extends DataPacket implements ClientboundPacket, Serverbou
 	public float $healthPercent;
 	public string $title;
 	public string $filteredTitle;
-	public bool $darkenScreen;
 	public int $color;
 	public int $overlay;
 
-	private static function base(int $bossActorUniqueId, int $eventId) : self{
+	public static function create(
+		int $bossActorUniqueId,
+		int $eventId,
+		int $playerActorUniqueId,
+		float $healthPercent,
+		string $title,
+		int $color,
+		int $overlay
+	) : self{
 		$result = new self;
 		$result->bossActorUniqueId = $bossActorUniqueId;
 		$result->eventType = $eventId;
-		return $result;
-	}
-
-	public static function show(int $bossActorUniqueId, string $title, float $healthPercent, bool $darkenScreen = false, int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		$result = self::base($bossActorUniqueId, self::TYPE_SHOW);
+		$result->playerActorUniqueId = $playerActorUniqueId;
+		$result->healthPercent = $healthPercent;
 		$result->title = $title;
 		$result->filteredTitle = $title;
-		$result->healthPercent = $healthPercent;
-		$result->darkenScreen = $darkenScreen;
 		$result->color = $color;
 		$result->overlay = $overlay;
 		return $result;
 	}
 
-	public static function hide(int $bossActorUniqueId) : self{
-		return self::base($bossActorUniqueId, self::TYPE_HIDE);
+	public static function show(int $bossActorUniqueId, string $title, float $healthPercent, bool $unused = false, int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_SHOW, 0, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function registerPlayer(int $bossActorUniqueId, int $playerActorUniqueId) : self{
-		$result = self::base($bossActorUniqueId, self::TYPE_REGISTER_PLAYER);
-		$result->playerActorUniqueId = $playerActorUniqueId;
-		return $result;
+	public static function hide(int $bossActorUniqueId, int $playerActorUniqueId = 0, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_HIDE, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function unregisterPlayer(int $bossActorUniqueId, int $playerActorUniqueId) : self{
-		$result = self::base($bossActorUniqueId, self::TYPE_UNREGISTER_PLAYER);
-		$result->playerActorUniqueId = $playerActorUniqueId;
-		return $result;
+	public static function registerPlayer(int $bossActorUniqueId, int $playerActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_REGISTER_PLAYER, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function healthPercent(int $bossActorUniqueId, float $healthPercent) : self{
-		$result = self::base($bossActorUniqueId, self::TYPE_HEALTH_PERCENT);
-		$result->healthPercent = $healthPercent;
-		return $result;
+	public static function unregisterPlayer(int $bossActorUniqueId, int $playerActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_UNREGISTER_PLAYER, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function title(int $bossActorUniqueId, string $title) : self{
-		$result = self::base($bossActorUniqueId, self::TYPE_TITLE);
-		$result->title = $title;
-		$result->filteredTitle = $title;
-		return $result;
+	public static function healthPercent(int $bossActorUniqueId, float $healthPercent, int $playerActorUniqueId = 0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_HEALTH_PERCENT, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function properties(int $bossActorUniqueId, bool $darkenScreen, int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		$result = self::base($bossActorUniqueId, self::TYPE_PROPERTIES);
-		$result->darkenScreen = $darkenScreen;
-		$result->color = $color;
-		$result->overlay = $overlay;
-		return $result;
+	public static function title(int $bossActorUniqueId, string $title, int $playerActorUniqueId = 0, float $healthPercent = 1.0, int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_TITLE, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function query(int $bossActorUniqueId, int $playerActorUniqueId) : self{
-		$result = self::base($bossActorUniqueId, self::TYPE_QUERY);
-		$result->playerActorUniqueId = $playerActorUniqueId;
-		return $result;
+	public static function properties(int $bossActorUniqueId, bool $unused, int $color = BossBarColor::PURPLE, int $overlay = 0, int $playerActorUniqueId = 0, float $healthPercent = 1.0, string $title = "") : self{
+		return self::create($bossActorUniqueId, self::TYPE_PROPERTIES, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	}
+
+	public static function query(int $bossActorUniqueId, int $playerActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_QUERY, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->bossActorUniqueId = $in->getActorUniqueId();
+		$this->playerActorUniqueId = $in->getActorUniqueId();
 		$this->eventType = $in->getUnsignedVarInt();
-		switch($this->eventType){
-			case self::TYPE_REGISTER_PLAYER:
-			case self::TYPE_UNREGISTER_PLAYER:
-			case self::TYPE_QUERY:
-				$this->playerActorUniqueId = $in->getActorUniqueId();
-				break;
-			/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_SHOW:
-				$this->title = $in->getString();
-				$this->filteredTitle = $in->getString();
-				$this->healthPercent = $in->getLFloat();
-			/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_PROPERTIES:
-				$this->darkenScreen = match($raw = $in->getLShort()){
-					0 => false,
-					1 => true,
-					default => throw new PacketDecodeException("Invalid darkenScreen value $raw"),
-				};
-			case self::TYPE_TEXTURE:
-				$this->color = $in->getUnsignedVarInt();
-				$this->overlay = $in->getUnsignedVarInt();
-				break;
-			case self::TYPE_HEALTH_PERCENT:
-				$this->healthPercent = $in->getLFloat();
-				break;
-			case self::TYPE_TITLE:
-				$this->title = $in->getString();
-				$this->filteredTitle = $in->getString();
-				break;
-			default:
-				break;
-		}
+		$this->title = $in->getString();
+		$this->filteredTitle = $in->getString();
+		$this->healthPercent = $in->getLFloat();
+		$this->color = $in->getByte();
+		$this->overlay = $in->getByte();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putActorUniqueId($this->bossActorUniqueId);
+		$out->putActorUniqueId($this->playerActorUniqueId);
 		$out->putUnsignedVarInt($this->eventType);
-		switch($this->eventType){
-			case self::TYPE_REGISTER_PLAYER:
-			case self::TYPE_UNREGISTER_PLAYER:
-			case self::TYPE_QUERY:
-				$out->putActorUniqueId($this->playerActorUniqueId);
-				break;
-			/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_SHOW:
-				$out->putString($this->title);
-				$out->putString($this->filteredTitle);
-				$out->putLFloat($this->healthPercent);
-			/** @noinspection PhpMissingBreakStatementInspection */
-			case self::TYPE_PROPERTIES:
-				$out->putLShort($this->darkenScreen ? 1 : 0);
-			case self::TYPE_TEXTURE:
-				$out->putUnsignedVarInt($this->color);
-				$out->putUnsignedVarInt($this->overlay);
-				break;
-			case self::TYPE_HEALTH_PERCENT:
-				$out->putLFloat($this->healthPercent);
-				break;
-			case self::TYPE_TITLE:
-				$out->putString($this->title);
-				$out->putString($this->filteredTitle);
-				break;
-			default:
-				break;
-		}
+		$out->putString($this->title);
+		$out->putString($this->filteredTitle);
+		$out->putLFloat($this->healthPercent);
+		$out->putByte($this->color);
+		$out->putByte($this->overlay);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

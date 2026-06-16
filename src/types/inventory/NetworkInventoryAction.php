@@ -68,10 +68,14 @@ class NetworkInventoryAction{
 	 * @throws BinaryDataException
 	 * @throws PacketDecodeException
 	 */
-	public function read(PacketSerializer $packet) : NetworkInventoryAction{
+	public function read(PacketSerializer $packet, bool $cereal = false) : NetworkInventoryAction{
+		if($cereal){
+			return $this->readCereal($packet);
+		}
 		$this->sourceType = $packet->getUnsignedVarInt();
 
 		switch($this->sourceType){
+			case self::SOURCE_TODO:
 			case self::SOURCE_CONTAINER:
 				$this->windowId = $packet->getVarInt();
 				break;
@@ -79,9 +83,6 @@ class NetworkInventoryAction{
 				$this->sourceFlags = $packet->getUnsignedVarInt();
 				break;
 			case self::SOURCE_CREATIVE:
-				break;
-			case self::SOURCE_TODO:
-				$this->windowId = $packet->getVarInt();
 				break;
 			default:
 				throw new PacketDecodeException("Unknown inventory action source type $this->sourceType");
@@ -97,7 +98,11 @@ class NetworkInventoryAction{
 	/**
 	 * @throws \InvalidArgumentException
 	 */
-	public function write(PacketSerializer $packet) : void{
+	public function write(PacketSerializer $packet, bool $cereal = false) : void{
+		if($cereal){
+			$this->writeCereal($packet);
+			return;
+		}
 		$packet->putUnsignedVarInt($this->sourceType);
 
 		switch($this->sourceType){
@@ -119,5 +124,22 @@ class NetworkInventoryAction{
 		$packet->putUnsignedVarInt($this->inventorySlot);
 		$packet->putItemStackWrapper($this->oldItem);
 		$packet->putItemStackWrapper($this->newItem);
+	}
+
+
+	public function readCereal(PacketSerializer $packet) : NetworkInventoryAction{
+		$this->sourceType = $packet->getUnsignedVarInt();
+		$this->windowId = ($packet->getBool() && $packet->getBool()) ? $packet->getByte() : 0;
+		$this->sourceFlags = ($packet->getBool() && $packet->getBool()) ? $packet->getUnsignedVarInt() : 0;
+		$this->inventorySlot = $packet->getUnsignedVarInt();
+		$this->oldItem  = $packet->getNetworkItemStackDescriptor();
+		$this->newItem  = $packet->getNetworkItemStackDescriptor();
+
+		return $this;
+	}
+
+
+	public function writeCereal(PacketSerializer $packet) : void{
+		//TODO
 	}
 }

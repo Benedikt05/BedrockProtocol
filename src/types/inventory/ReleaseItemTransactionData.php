@@ -48,17 +48,17 @@ class ReleaseItemTransactionData extends TransactionData{
 		return $this->headPosition;
 	}
 
-	protected function decodeData(PacketSerializer $stream) : void{
-		$this->actionType = $stream->getUnsignedVarInt();
+	protected function decodeData(PacketSerializer $stream, bool $tr = false) : void{
+		$this->actionType = $tr ? $stream->getVarInt() : $stream->getUnsignedVarInt();
 		$this->hotbarSlot = $stream->getVarInt();
-		$this->itemInHand = $stream->getItemStackWrapper();
+		$this->itemInHand = $tr ? $stream->getNetworkItemStackDescriptor() : $stream->getItemStackWrapper();
 		$this->headPosition = $stream->getVector3();
 	}
 
-	protected function encodeData(PacketSerializer $stream) : void{
-		$stream->putUnsignedVarInt($this->actionType);
+	protected function encodeData(PacketSerializer $stream, bool $tr = false) : void{
+		$tr ? $stream->putVarInt($this->actionType) : $stream->putUnsignedVarInt($this->actionType);
 		$stream->putVarInt($this->hotbarSlot);
-		$stream->putItemStackWrapper($this->itemInHand);
+		$tr ? $stream->putNetworkItemStackDescriptor($this->itemInHand) : $stream->putItemStackWrapper($this->itemInHand);
 		$stream->putVector3($this->headPosition);
 	}
 

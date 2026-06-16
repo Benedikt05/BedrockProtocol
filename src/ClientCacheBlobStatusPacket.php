@@ -53,10 +53,10 @@ class ClientCacheBlobStatusPacket extends DataPacket implements ServerboundPacke
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$missCount = $in->getUnsignedVarInt();
-		$hitCount = $in->getUnsignedVarInt();
 		for($i = 0; $i < $missCount; ++$i){
 			$this->missHashes[] = $in->getLLong();
 		}
+		$hitCount = $in->getUnsignedVarInt();
 		for($i = 0; $i < $hitCount; ++$i){
 			$this->hitHashes[] = $in->getLLong();
 		}
@@ -64,10 +64,10 @@ class ClientCacheBlobStatusPacket extends DataPacket implements ServerboundPacke
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putUnsignedVarInt(count($this->missHashes));
-		$out->putUnsignedVarInt(count($this->hitHashes));
 		foreach($this->missHashes as $hash){
 			$out->putLLong($hash);
 		}
+		$out->putUnsignedVarInt(count($this->hitHashes));
 		foreach($this->hitHashes as $hash){
 			$out->putLLong($hash);
 		}

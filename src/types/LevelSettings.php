@@ -192,5 +192,7 @@ final class LevelSettings{
 		$out->writeOptional($this->experimentalGameplayOverride, $out->putBool(...));
 		$out->putByte($this->chatRestrictionLevel);
 		$out->putBool($this->disablePlayerInteractions);
+		$out->putVarInt(0); //serverEditorConnectionPolicy
+		$out->putBool(false); //allowAnonymousBlockDropsInEditorWorlds
 	}
 }

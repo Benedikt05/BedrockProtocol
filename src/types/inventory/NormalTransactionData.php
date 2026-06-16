@@ -23,11 +23,11 @@ class NormalTransactionData extends TransactionData{
 
 	public const ID = InventoryTransactionPacket::TYPE_NORMAL;
 
-	protected function decodeData(PacketSerializer $stream) : void{
+	protected function decodeData(PacketSerializer $stream, bool $tr = false) : void{
 
 	}
 
-	protected function encodeData(PacketSerializer $stream) : void{
+	protected function encodeData(PacketSerializer $stream, bool $tr = false) : void{
 
 	}
 

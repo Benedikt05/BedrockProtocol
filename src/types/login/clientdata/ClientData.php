@@ -76,7 +76,7 @@ final class ClientData{
 	public int $GuiScale;
 
 	/** @required */
-	public bool $IsEditorMode;
+	public bool $ClientIsEditorCapable;
 
 	/** @required */
 	public string $LanguageCode;
@@ -162,4 +162,7 @@ final class ClientData{
 
 	/** @required */
 	public int $UIProfile;
+
+	/** @required */
+	public int $ClientEditorConnectionIntent;
 }
