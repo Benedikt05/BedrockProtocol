@@ -68,7 +68,7 @@ class UseItemOnEntityTransactionData extends TransactionData{
 		$this->clickPosition = $stream->getVector3();
 	}
 
-	protected function encodeData(PacketSerializer $stream) : void{
+	protected function encodeData(PacketSerializer $stream, bool $tr = false) : void{
 		$stream->putActorRuntimeId($this->actorRuntimeId);
 		$tr ? $stream->putVarInt($this->actionType) : $stream->putUnsignedVarInt($this->actionType);
 		$stream->putVarInt($this->hotbarSlot);
