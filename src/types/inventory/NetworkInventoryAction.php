@@ -16,6 +16,7 @@ namespace pocketmine\network\mcpe\protocol\types\inventory;
 
 use pocketmine\network\mcpe\protocol\PacketDecodeException;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\utils\Binary;
 use pocketmine\utils\BinaryDataException;
 
 class NetworkInventoryAction{
@@ -106,6 +107,7 @@ class NetworkInventoryAction{
 		$packet->putUnsignedVarInt($this->sourceType);
 
 		switch($this->sourceType){
+			case self::SOURCE_TODO:
 			case self::SOURCE_CONTAINER:
 				$packet->putVarInt($this->windowId);
 				break;
@@ -113,9 +115,6 @@ class NetworkInventoryAction{
 				$packet->putUnsignedVarInt($this->sourceFlags);
 				break;
 			case self::SOURCE_CREATIVE:
-				break;
-			case self::SOURCE_TODO:
-				$packet->putVarInt($this->windowId);
 				break;
 			default:
 				throw new \InvalidArgumentException("Unknown inventory action source type $this->sourceType");
@@ -129,7 +128,7 @@ class NetworkInventoryAction{
 
 	public function readCereal(PacketSerializer $packet) : NetworkInventoryAction{
 		$this->sourceType = $packet->getUnsignedVarInt();
-		$this->windowId = ($packet->getBool() && $packet->getBool()) ? $packet->getByte() : 0;
+		$this->windowId = ($packet->getBool() && $packet->getBool()) ?  Binary::signByte($packet->getByte()) : 0;
 		$this->sourceFlags = ($packet->getBool() && $packet->getBool()) ? $packet->getUnsignedVarInt() : 0;
 		$this->inventorySlot = $packet->getUnsignedVarInt();
 		$this->oldItem  = $packet->getNetworkItemStackDescriptor();
