@@ -163,20 +163,4 @@ class SkinData{
 		$this->isVerified = $verified;
 	}
 
-	public static function convertArmSize(string $armSize) : int{
-		return match ($armSize) {
-			"slim" => SkinData::ARM_SIZE_SLIM,
-			"wide", "" => SkinData::ARM_SIZE_WIDE,
-			default => throw new \InvalidArgumentException("Unknown arm size $armSize")
-		};
-	}
-
-	public static function convertColor(string $color) : int{
-		$hex = ltrim($color, '#');
-		if($hex === '' || $hex === '0'){
-			return 0;
-		}
-
-		return (int) hexdec($hex);
-	}
 }
