@@ -39,12 +39,10 @@ use pocketmine\network\mcpe\protocol\types\GameRule;
 use pocketmine\network\mcpe\protocol\types\IntGameRule;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStack;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
-use pocketmine\network\mcpe\protocol\types\recipe\ComplexAliasItemDescriptor;
-use pocketmine\network\mcpe\protocol\types\recipe\IntIdMetaItemDescriptor;
 use pocketmine\network\mcpe\protocol\types\recipe\ItemDescriptorType;
 use pocketmine\network\mcpe\protocol\types\recipe\MolangItemDescriptor;
+use pocketmine\network\mcpe\protocol\types\recipe\NameItemDescriptor;
 use pocketmine\network\mcpe\protocol\types\recipe\RecipeIngredient;
-use pocketmine\network\mcpe\protocol\types\recipe\StringIdMetaItemDescriptor;
 use pocketmine\network\mcpe\protocol\types\recipe\TagItemDescriptor;
 use pocketmine\network\mcpe\protocol\types\skin\PersonaPieceTintColor;
 use pocketmine\network\mcpe\protocol\types\skin\PersonaSkinPiece;
@@ -53,7 +51,6 @@ use pocketmine\network\mcpe\protocol\types\skin\SkinData;
 use pocketmine\network\mcpe\protocol\types\skin\SkinImage;
 use pocketmine\network\mcpe\protocol\types\StructureEditorData;
 use pocketmine\network\mcpe\protocol\types\StructureSettings;
-use pocketmine\utils\Binary;
 use pocketmine\utils\BinaryDataException;
 use pocketmine\utils\BinaryStream;
 use Ramsey\Uuid\Uuid;
@@ -110,13 +107,13 @@ class PacketSerializer extends BinaryStream{
 		$skinPlayFabId = $this->getString();
 		$skinResourcePatch = $this->getString();
 		$skinData = $this->getSkinImage();
-		$animationCount = $this->getLInt();
+		$animationCount = $this->getUnsignedVarInt();
 		$animations = [];
 		for($i = 0; $i < $animationCount; ++$i){
 			$skinImage = $this->getSkinImage();
-			$animationType = $this->getLInt();
+			$animationType = $this->getUnsignedVarInt();
 			$animationFrames = $this->getLFloat();
-			$expressionType = $this->getLInt();
+			$expressionType = $this->getUnsignedVarInt();
 			$animations[] = new SkinAnimation($skinImage, $animationType, $animationFrames, $expressionType);
 		}
 		$capeData = $this->getSkinImage();
@@ -125,26 +122,25 @@ class PacketSerializer extends BinaryStream{
 		$animationData = $this->getString();
 		$capeId = $this->getString();
 		$fullSkinId = $this->getString();
-		$armSize = $this->getString();
-		$skinColor = $this->getString();
-		$personaPieceCount = $this->getLInt();
+		$armSize = $this->getByte();
+		$skinColor = $this->getLInt();
+		$personaPieceCount = $this->getUnsignedVarInt();
 		$personaPieces = [];
 		for($i = 0; $i < $personaPieceCount; ++$i){
 			$pieceId = $this->getString();
-			$pieceType = $this->getString();
-			$packId = $this->getString();
+			$pieceType = $this->getLInt();
+			$packId = $this->getUUID();
 			$isDefaultPiece = $this->getBool();
 			$productId = $this->getString();
 			$personaPieces[] = new PersonaSkinPiece($pieceId, $pieceType, $packId, $isDefaultPiece, $productId);
 		}
-		$pieceTintColorCount = $this->getLInt();
+		$pieceTintColorCount = $this->getUnsignedVarInt();
 		$pieceTintColors = [];
 		for($i = 0; $i < $pieceTintColorCount; ++$i){
 			$pieceType = $this->getString();
-			$colorCount = $this->getLInt();
 			$colors = [];
-			for($j = 0; $j < $colorCount; ++$j){
-				$colors[] = $this->getString();
+			for($j = 0; $j < 4; ++$j){
+				$colors[] = $this->getLInt();
 			}
 			$pieceTintColors[] = new PersonaPieceTintColor(
 				$pieceType,
@@ -157,6 +153,8 @@ class PacketSerializer extends BinaryStream{
 		$capeOnClassic = $this->getBool();
 		$isPrimaryUser = $this->getBool();
 		$override = $this->getBool();
+		$trustedSkinFlag = $this->getString();
+		$profileHash = $this->getString();
 
 		return new SkinData(
 			$skinId,
@@ -180,6 +178,8 @@ class PacketSerializer extends BinaryStream{
 			$capeOnClassic,
 			$isPrimaryUser,
 			$override,
+			$trustedSkinFlag,
+			$profileHash
 		);
 	}
 
@@ -188,12 +188,12 @@ class PacketSerializer extends BinaryStream{
 		$this->putString($skin->getPlayFabId());
 		$this->putString($skin->getResourcePatch());
 		$this->putSkinImage($skin->getSkinImage());
-		$this->putLInt(count($skin->getAnimations()));
+		$this->putUnsignedVarInt(count($skin->getAnimations()));
 		foreach($skin->getAnimations() as $animation){
 			$this->putSkinImage($animation->getImage());
-			$this->putLInt($animation->getType());
+			$this->putUnsignedVarInt($animation->getType());
 			$this->putLFloat($animation->getFrames());
-			$this->putLInt($animation->getExpressionType());
+			$this->putUnsignedVarInt($animation->getExpressionType());
 		}
 		$this->putSkinImage($skin->getCapeImage());
 		$this->putString($skin->getGeometryData());
@@ -201,22 +201,21 @@ class PacketSerializer extends BinaryStream{
 		$this->putString($skin->getAnimationData());
 		$this->putString($skin->getCapeId());
 		$this->putString($skin->getFullSkinId());
-		$this->putString($skin->getArmSize());
-		$this->putString($skin->getSkinColor());
-		$this->putLInt(count($skin->getPersonaPieces()));
+		$this->putByte($skin->getArmSize());
+		$this->putLInt($skin->getSkinColor());
+		$this->putUnsignedVarInt(count($skin->getPersonaPieces()));
 		foreach($skin->getPersonaPieces() as $piece){
 			$this->putString($piece->getPieceId());
-			$this->putString($piece->getPieceType());
-			$this->putString($piece->getPackId());
+			$this->putLInt($piece->getPieceType());
+			$this->putUUID($piece->getPackId());
 			$this->putBool($piece->isDefaultPiece());
 			$this->putString($piece->getProductId());
 		}
-		$this->putLInt(count($skin->getPieceTintColors()));
+		$this->putUnsignedVarInt(count($skin->getPieceTintColors()));
 		foreach($skin->getPieceTintColors() as $tint){
 			$this->putString($tint->getPieceType());
-			$this->putLInt(count($tint->getColors()));
 			foreach($tint->getColors() as $color){
-				$this->putString($color);
+				$this->putLInt($color);
 			}
 		}
 		$this->putBool($skin->isPremium());
@@ -224,6 +223,8 @@ class PacketSerializer extends BinaryStream{
 		$this->putBool($skin->isPersonaCapeOnClassic());
 		$this->putBool($skin->isPrimaryUser());
 		$this->putBool($skin->isOverride());
+		$this->putString($skin->getTrustedSkinFlag());
+		$this->putString($skin->getProfileHash());
 	}
 
 	private function getSkinImage() : SkinImage{
@@ -250,10 +251,6 @@ class PacketSerializer extends BinaryStream{
 	 */
 	private function getItemStackHeader() : array{
 		$id = $this->getVarInt();
-		if($id === 0){
-			return [0, 0, 0];
-		}
-
 		$count = $this->getLShort();
 		$meta = $this->getUnsignedVarInt();
 
@@ -261,11 +258,6 @@ class PacketSerializer extends BinaryStream{
 	}
 
 	private function putItemStackHeader(ItemStack $itemStack) : bool{
-		if($itemStack->getId() === 0){
-			$this->putVarInt(0);
-			return false;
-		}
-
 		$this->putVarInt($itemStack->getId());
 		$this->putLShort($itemStack->getCount());
 		$this->putUnsignedVarInt($itemStack->getMeta());
@@ -292,7 +284,7 @@ class PacketSerializer extends BinaryStream{
 	public function getItemStackWithoutStackId() : ItemStack{
 		[$id, $count, $meta] = $this->getItemStackHeader();
 
-		return $id !== 0 ? $this->getItemStackFooter($id, $meta, $count) : ItemStack::null();
+		return $this->getItemStackFooter($id, $meta, $count);
 
 	}
 
@@ -335,17 +327,16 @@ class PacketSerializer extends BinaryStream{
 		$meta = $this->getUnsignedVarInt();
 
 		$hasNetId = $this->getBool();
-		if ($hasNetId) {
-			$this->getUnsignedVarInt(); //variant
-			$stackId = $this->readServerItemStackId();
+		$stackId = 0;
+		if($hasNetId){
+			$stackId = $this->getVarInt();
 		}
 
 		$blockRuntimeId = $this->getUnsignedVarInt();
 		$rawExtraData = $this->getString();
 
-		return new ItemStackWrapper($stackId ?? 0, new ItemStack($id, $meta, $count, $blockRuntimeId, $rawExtraData));
-	}
-
+		return new ItemStackWrapper($stackId, new ItemStack($id, $meta, $count, $blockRuntimeId, $rawExtraData));
+		}
 	public function putNetworkItemStackDescriptor(ItemStackWrapper $itemStackWrapper) : void{
 		$this->putLShort($itemStackWrapper->getItemStack()->getId());
 		$this->putLShort($itemStackWrapper->getItemStack()->getCount());
@@ -353,7 +344,6 @@ class PacketSerializer extends BinaryStream{
 
 		$this->putBool($hasNetId = $itemStackWrapper->getStackId() !== 0);
 		if($hasNetId){
-			$this->putUnsignedVarInt(0); //variant
 			$this->writeServerItemStackId($itemStackWrapper->getStackId());
 		}
 
@@ -362,27 +352,26 @@ class PacketSerializer extends BinaryStream{
 	}
 
 	public function getRecipeIngredient() : RecipeIngredient{
-		$descriptorType = $this->getByte();
+		$descriptorType = $this->getUnsignedVarInt();
+		$this->getByte();
 		$descriptor = match($descriptorType){
-			ItemDescriptorType::INT_ID_META => IntIdMetaItemDescriptor::read($this),
-			ItemDescriptorType::STRING_ID_META => StringIdMetaItemDescriptor::read($this),
+			ItemDescriptorType::NAME => NameItemDescriptor::read($this),
 			ItemDescriptorType::TAG => TagItemDescriptor::read($this),
 			ItemDescriptorType::MOLANG => MolangItemDescriptor::read($this),
-			ItemDescriptorType::COMPLEX_ALIAS => ComplexAliasItemDescriptor::read($this),
 			default => null
 		};
-		$count = $this->getVarInt();
+		$count = $this->getSignedLShort();
 
 		return new RecipeIngredient($descriptor, $count);
 	}
 
 	public function putRecipeIngredient(RecipeIngredient $ingredient) : void{
 		$type = $ingredient->getDescriptor();
-
+		$this->putUnsignedVarInt($type?->getTypeId() ?? 0);
 		$this->putByte($type?->getTypeId() ?? 0);
 		$type?->write($this);
 
-		$this->putVarInt($ingredient->getCount());
+		$this->putLShort($ingredient->getCount());
 	}
 
 	/**
@@ -400,6 +389,7 @@ class PacketSerializer extends BinaryStream{
 		for($i = 0; $i < $count; ++$i){
 			$key = $this->getUnsignedVarInt();
 			$type = $this->getUnsignedVarInt();
+			$this->getByte();
 
 			$data[$key] = $this->readMetadataProperty($type);
 		}
@@ -434,6 +424,7 @@ class PacketSerializer extends BinaryStream{
 		foreach($metadata as $key => $d){
 			$this->putUnsignedVarInt($key);
 			$this->putUnsignedVarInt($d->getTypeId());
+			$this->putByte($d->getTypeId());//type2
 			$d->write($this);
 		}
 	}
@@ -584,14 +575,14 @@ class PacketSerializer extends BinaryStream{
 	 * @throws PacketDecodeException
 	 * @throws BinaryDataException
 	 */
-	public function getGameRules(bool $isStartGame) : array{
+	public function getGameRules() : array{
 		$count = $this->getUnsignedVarInt();
 		$rules = [];
 		for($i = 0; $i < $count; ++$i){
 			$name = $this->getString();
 			$isPlayerModifiable = $this->getBool();
 			$type = $this->getUnsignedVarInt();
-			$rules[$name] = $this->readGameRule($type, $isPlayerModifiable, $isStartGame);
+			$rules[$name] = $this->readGameRule($type, $isPlayerModifiable, false);
 		}
 
 		return $rules;
@@ -603,13 +594,13 @@ class PacketSerializer extends BinaryStream{
 	 * @param GameRule[] $rules
 	 * @phpstan-param array<string, GameRule> $rules
 	 */
-	public function putGameRules(array $rules, bool $isStartGame) : void{
+	public function putGameRules(array $rules) : void{
 		$this->putUnsignedVarInt(count($rules));
 		foreach($rules as $name => $rule){
 			$this->putString($name);
 			$this->putBool($rule->isPlayerModifiable());
 			$this->putUnsignedVarInt($rule->getTypeId());
-			$rule->encode($this, $isStartGame);
+			$rule->encode($this, false);
 		}
 	}
 
@@ -750,11 +741,11 @@ class PacketSerializer extends BinaryStream{
 	}
 
 	public function readRecipeNetId() : int{
-		return $this->getUnsignedVarInt();
+		return $this->getVarInt();
 	}
 
 	public function writeRecipeNetId(int $id) : void{
-		$this->putUnsignedVarInt($id);
+		$this->putVarInt($id);
 	}
 
 	public function readCreativeItemNetId() : int{
@@ -776,7 +767,7 @@ class PacketSerializer extends BinaryStream{
 	 * - 0 refers to an empty itemstack (air)
 	 */
 	public function readItemStackNetIdVariant() : int{
-		return $this->getVarInt();
+		return $this->getLInt();
 	}
 
 	/**
@@ -785,6 +776,14 @@ class PacketSerializer extends BinaryStream{
 	 * as-yet unacknowledged request from the client.
 	 */
 	public function writeItemStackNetIdVariant(int $id) : void{
+		$this->putLInt($id);
+	}
+
+	public function readItemStackNetId() : int{
+		return $this->getVarInt();
+	}
+
+	public function writeItemStackNetId(int $id) : void{
 		$this->putVarInt($id);
 	}
 

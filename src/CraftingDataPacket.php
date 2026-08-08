@@ -30,18 +30,16 @@ use function count;
 class CraftingDataPacket extends DataPacket implements ClientboundPacket{
 	public const NETWORK_ID = ProtocolInfo::CRAFTING_DATA_PACKET;
 
-	public const ENTRY_SHAPELESS = 0;
-	public const ENTRY_SHAPED = 1;
-	public const ENTRY_FURNACE = 2;
-	public const ENTRY_FURNACE_DATA = 3;
-	public const ENTRY_MULTI = 4;
-	public const ENTRY_USER_DATA_SHAPELESS = 5;
-	public const ENTRY_SHAPELESS_CHEMISTRY = 6;
-	public const ENTRY_SHAPED_CHEMISTRY = 7;
-	public const ENTRY_SMITHING_TRANSFORM = 8;
-	public const ENTRY_SMITHING_TRIM = 9;
+	public const ENTRY_SHAPED = 0;
+	public const ENTRY_SHAPELESS = 1;
+	public const ENTRY_MULTI = 2;
+	public const ENTRY_USER_DATA_SHAPELESS = 3;
+	public const ENTRY_SHAPELESS_CHEMISTRY = 4;
+	public const ENTRY_SHAPED_CHEMISTRY = 5;
+	public const ENTRY_SMITHING_TRANSFORM = 6;
+	public const ENTRY_SMITHING_TRIM = 7;
 
-	/** @var RecipeWithTypeId[] */
+	/** @var RecipeWithTypeId[][] */
 	public array $recipesWithTypeIds = [];
 	/** @var PotionTypeRecipe[] */
 	public array $potionTypeRecipes = [];
@@ -53,7 +51,7 @@ class CraftingDataPacket extends DataPacket implements ClientboundPacket{
 
 	/**
 	 * @generate-create-func
-	 * @param RecipeWithTypeId[]            $recipesWithTypeIds
+	 * @param RecipeWithTypeId[][]            $recipesWithTypeIds
 	 * @param PotionTypeRecipe[]            $potionTypeRecipes
 	 * @param PotionContainerChangeRecipe[] $potionContainerRecipes
 	 * @param MaterialReducerRecipe[]       $materialReducerRecipes
@@ -114,10 +112,22 @@ class CraftingDataPacket extends DataPacket implements ClientboundPacket{
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putUnsignedVarInt(count($this->recipesWithTypeIds));
-		foreach($this->recipesWithTypeIds as $d){
-			$out->putVarInt($d->getTypeId());
-			$d->encode($out);
+		$recipeTypeOrder = [
+			self::ENTRY_SHAPED,
+			self::ENTRY_SHAPELESS,
+			self::ENTRY_MULTI,
+			self::ENTRY_USER_DATA_SHAPELESS,
+			self::ENTRY_SHAPELESS_CHEMISTRY,
+			self::ENTRY_SHAPED_CHEMISTRY,
+			self::ENTRY_SMITHING_TRANSFORM,
+			self::ENTRY_SMITHING_TRIM,
+		];
+		foreach($recipeTypeOrder as $recipeType){
+			$recipesWithTypeIds = $this->recipesWithTypeIds[$recipeType] ?? [];
+			$out->putUnsignedVarInt(count($recipesWithTypeIds));
+			foreach($recipesWithTypeIds as $d){
+				$d->encode($out);
+			}
 		}
 		$out->putUnsignedVarInt(count($this->potionTypeRecipes));
 		foreach($this->potionTypeRecipes as $recipe){

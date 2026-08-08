@@ -22,8 +22,8 @@ use function count;
 class PlayerListPacket extends DataPacket implements ClientboundPacket{
 	public const NETWORK_ID = ProtocolInfo::PLAYER_LIST_PACKET;
 
-	public const TYPE_ADD = 0;
-	public const TYPE_REMOVE = 1;
+	public const TYPE_ADD = 1;
+	public const TYPE_REMOVE = 0;
 
 	public int $type;
 	/** @var PlayerListEntry[] */
@@ -55,7 +55,6 @@ class PlayerListPacket extends DataPacket implements ClientboundPacket{
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->type = $in->getByte();
 		$count = $in->getUnsignedVarInt();
 		for($i = 0; $i < $count; ++$i){
 			$entry = new PlayerListEntry();
@@ -86,10 +85,11 @@ class PlayerListPacket extends DataPacket implements ClientboundPacket{
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putByte($this->type);
 		$out->putUnsignedVarInt(count($this->entries));
 		foreach($this->entries as $entry){
-			if($this->type === self::TYPE_ADD){
+			$out->putUnsignedVarInt($entry->type);
+			$out->putByte($entry->type === self::TYPE_ADD ? 0 : 1);
+			if($entry->type === self::TYPE_ADD){
 				$out->putUUID($entry->uuid);
 				$out->putActorUniqueId($entry->actorUniqueId);
 				$out->putString($entry->username);
@@ -103,11 +103,6 @@ class PlayerListPacket extends DataPacket implements ClientboundPacket{
 				$out->putLInt(($entry->color ?? new Color(255, 255, 255))->toARGB());
 			}else{
 				$out->putUUID($entry->uuid);
-			}
-		}
-		if($this->type === self::TYPE_ADD){
-			foreach($this->entries as $entry){
-				$out->putBool($entry->skinData->isVerified());
 			}
 		}
 	}

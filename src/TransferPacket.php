@@ -44,6 +44,7 @@ class TransferPacket extends DataPacket implements ClientboundPacket{
 		$out->putString($this->address);
 		$out->putLShort($this->port);
 		$out->putBool($this->reloadWorld);
+		$out->putBool(false); //optional GatheringJoinInfo
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

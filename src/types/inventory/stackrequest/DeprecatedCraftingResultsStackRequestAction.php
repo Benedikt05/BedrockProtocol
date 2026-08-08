@@ -16,7 +16,6 @@ namespace pocketmine\network\mcpe\protocol\types\inventory\stackrequest;
 
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\types\GetTypeIdFromConstTrait;
-use pocketmine\network\mcpe\protocol\types\inventory\ItemStack;
 use function count;
 
 /**
@@ -29,14 +28,14 @@ final class DeprecatedCraftingResultsStackRequestAction extends ItemStackRequest
 	public const ID = ItemStackRequestActionType::CRAFTING_RESULTS_DEPRECATED_ASK_TY_LAING;
 
 	/**
-	 * @param ItemStack[] $results
+	 * @param ItemStackRequestNetworkItemInstanceDescriptor[] $results
 	 */
 	public function __construct(
 		private array $results,
 		private int $iterations
 	){}
 
-	/** @return ItemStack[] */
+	/** @return ItemStackRequestNetworkItemInstanceDescriptor[] */
 	public function getResults() : array{ return $this->results; }
 
 	public function getIterations() : int{ return $this->iterations; }
@@ -44,7 +43,7 @@ final class DeprecatedCraftingResultsStackRequestAction extends ItemStackRequest
 	public static function read(PacketSerializer $in) : self{
 		$results = [];
 		for($i = 0, $len = $in->getUnsignedVarInt(); $i < $len; ++$i){
-			$results[] = $in->getItemStackWithoutStackId();
+			$results[] = ItemStackRequestNetworkItemInstanceDescriptor::read($in);
 		}
 		$iterations = $in->getByte();
 		return new self($results, $iterations);
@@ -53,7 +52,7 @@ final class DeprecatedCraftingResultsStackRequestAction extends ItemStackRequest
 	public function write(PacketSerializer $out) : void{
 		$out->putUnsignedVarInt(count($this->results));
 		foreach($this->results as $result){
-			$out->putItemStackWithoutStackId($result);
+			$result->write($out);
 		}
 		$out->putByte($this->iterations);
 	}

@@ -21,9 +21,9 @@ final class ItemStackResponseSlotInfo{
 		private int $slot,
 		private int $hotbarSlot,
 		private int $count,
-		private int $itemStackId,
+		private ?int $itemStackId,
 		private string $customName,
-		private string $filteredCustomName,
+		private ?string $filteredCustomName,
 		private int $durabilityCorrection
 	){}
 
@@ -33,11 +33,11 @@ final class ItemStackResponseSlotInfo{
 
 	public function getCount() : int{ return $this->count; }
 
-	public function getItemStackId() : int{ return $this->itemStackId; }
+	public function getItemStackId() : ?int{ return $this->itemStackId; }
 
 	public function getCustomName() : string{ return $this->customName; }
 
-	public function getFilteredCustomName() : string{ return $this->filteredCustomName; }
+	public function getFilteredCustomName() : ?string{ return $this->filteredCustomName; }
 
 	public function getDurabilityCorrection() : int{ return $this->durabilityCorrection; }
 
@@ -45,9 +45,13 @@ final class ItemStackResponseSlotInfo{
 		$slot = $in->getByte();
 		$hotbarSlot = $in->getByte();
 		$count = $in->getByte();
-		$itemStackId = $in->readServerItemStackId();
+		$itemStackId = null;
+		if($in->getBool() && $in->getBool()){
+			$itemStackId = $in->readServerItemStackId();
+		}
 		$customName = $in->getString();
-		$filteredCustomName = $in->getString();
+		$filteredCustomName = null;
+		if($in->getBool()) $filteredCustomName = $in->getString();
 		$durabilityCorrection = $in->getVarInt();
 		return new self($slot, $hotbarSlot, $count, $itemStackId, $customName, $filteredCustomName, $durabilityCorrection);
 	}
@@ -56,9 +60,16 @@ final class ItemStackResponseSlotInfo{
 		$out->putByte($this->slot);
 		$out->putByte($this->hotbarSlot);
 		$out->putByte($this->count);
-		$out->writeServerItemStackId($this->itemStackId);
+		$out->putBool($stackId = $this->itemStackId !== null);
+		$out->putBool($stackId);
+		if($stackId){
+			$out->writeServerItemStackId($this->itemStackId);
+		}
 		$out->putString($this->customName);
-		$out->putString($this->filteredCustomName);
+		$out->putBool($filteredName = $this->filteredCustomName !== null);
+		if($filteredName){
+			$out->putString($this->filteredCustomName);
+		}
 		$out->putVarInt($this->durabilityCorrection);
 	}
 }

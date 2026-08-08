@@ -165,4 +165,6 @@ final class ClientData{
 
 	/** @required */
 	public int $ClientEditorConnectionIntent;
+	public $Nonce;
+	public $ProfileHash;
 }

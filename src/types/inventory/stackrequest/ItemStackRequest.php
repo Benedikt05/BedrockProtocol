@@ -77,7 +77,8 @@ final class ItemStackRequest{
 		$requestId = $in->readItemStackRequestId();
 		$actions = [];
 		for($i = 0, $len = $in->getUnsignedVarInt(); $i < $len; ++$i){
-			$typeId = $in->getByte();
+			$typeId = $in->getUnsignedVarInt();
+			$in->getByte();
 			$actions[] = self::readAction($in, $typeId);
 		}
 		$filterStrings = [];
@@ -92,7 +93,8 @@ final class ItemStackRequest{
 		$out->writeItemStackRequestId($this->requestId);
 		$out->putUnsignedVarInt(count($this->actions));
 		foreach($this->actions as $action){
-			$out->putByte($action->getTypeId());
+			$out->putUnsignedVarInt($action->getTypeId());
+			$out->putByte(ItemStackRequestActionType::toLegacyTypeId($action->getTypeId()));
 			$action->write($out);
 		}
 		$out->putUnsignedVarInt(count($this->filterStrings));

@@ -63,70 +63,8 @@ class NetworkInventoryAction{
 	public ItemStackWrapper $oldItem;
 	public ItemStackWrapper $newItem;
 
-	/**
-	 * @return $this
-	 *
-	 * @throws BinaryDataException
-	 * @throws PacketDecodeException
-	 */
-	public function read(PacketSerializer $packet, bool $cereal = false) : NetworkInventoryAction{
-		if($cereal){
-			return $this->readCereal($packet);
-		}
-		$this->sourceType = $packet->getUnsignedVarInt();
 
-		switch($this->sourceType){
-			case self::SOURCE_TODO:
-			case self::SOURCE_CONTAINER:
-				$this->windowId = $packet->getVarInt();
-				break;
-			case self::SOURCE_WORLD:
-				$this->sourceFlags = $packet->getUnsignedVarInt();
-				break;
-			case self::SOURCE_CREATIVE:
-				break;
-			default:
-				throw new PacketDecodeException("Unknown inventory action source type $this->sourceType");
-		}
-
-		$this->inventorySlot = $packet->getUnsignedVarInt();
-		$this->oldItem = $packet->getItemStackWrapper();
-		$this->newItem = $packet->getItemStackWrapper();
-
-		return $this;
-	}
-
-	/**
-	 * @throws \InvalidArgumentException
-	 */
-	public function write(PacketSerializer $packet, bool $cereal = false) : void{
-		if($cereal){
-			$this->writeCereal($packet);
-			return;
-		}
-		$packet->putUnsignedVarInt($this->sourceType);
-
-		switch($this->sourceType){
-			case self::SOURCE_TODO:
-			case self::SOURCE_CONTAINER:
-				$packet->putVarInt($this->windowId);
-				break;
-			case self::SOURCE_WORLD:
-				$packet->putUnsignedVarInt($this->sourceFlags);
-				break;
-			case self::SOURCE_CREATIVE:
-				break;
-			default:
-				throw new \InvalidArgumentException("Unknown inventory action source type $this->sourceType");
-		}
-
-		$packet->putUnsignedVarInt($this->inventorySlot);
-		$packet->putItemStackWrapper($this->oldItem);
-		$packet->putItemStackWrapper($this->newItem);
-	}
-
-
-	public function readCereal(PacketSerializer $packet) : NetworkInventoryAction{
+	public function read(PacketSerializer $packet) : NetworkInventoryAction{
 		$this->sourceType = $packet->getUnsignedVarInt();
 		$this->windowId = ($packet->getBool() && $packet->getBool()) ?  Binary::signByte($packet->getByte()) : 0;
 		$this->sourceFlags = ($packet->getBool() && $packet->getBool()) ? $packet->getUnsignedVarInt() : 0;
@@ -138,7 +76,7 @@ class NetworkInventoryAction{
 	}
 
 
-	public function writeCereal(PacketSerializer $packet) : void{
+	public function write(PacketSerializer $packet) : void{
 		//TODO
 	}
 }

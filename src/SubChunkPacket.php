@@ -53,7 +53,7 @@ class SubChunkPacket extends DataPacket implements ClientboundPacket{
 		$this->dimension = $in->getVarInt();
 		$this->baseSubChunkPosition = SubChunkPosition::read($in);
 
-		$count = $in->getLInt();
+		$count = $in->getUnsignedVarInt();
 		if($cacheEnabled){
 			$entries = [];
 			for($i = 0; $i < $count; $i++){
@@ -74,7 +74,7 @@ class SubChunkPacket extends DataPacket implements ClientboundPacket{
 		$out->putVarInt($this->dimension);
 		$this->baseSubChunkPosition->write($out);
 
-		$out->putLInt(count($this->entries->getEntries()));
+		$out->putUnsignedVarInt(count($this->entries->getEntries()));
 
 		foreach($this->entries->getEntries() as $entry){
 			$entry->write($out);

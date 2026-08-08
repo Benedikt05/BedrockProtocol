@@ -51,18 +51,18 @@ class PlayerLocationPacket extends DataPacket implements ClientboundPacket{
 	public function getPosition() : ?Vector3{ return $this->position; }
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->type = PlayerLocationType::fromPacket($in->getLInt());
 		$this->actorUniqueId = $in->getActorUniqueId();
-
+		$this->type = PlayerLocationType::fromPacket($in->getUnsignedVarInt());
+		$in->getVarInt(); //unknown
 		if($this->type === PlayerLocationType::PLAYER_LOCATION_COORDINATES){
 			$this->position = $in->getVector3();
 		}
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putLInt($this->type->value);
 		$out->putActorUniqueId($this->actorUniqueId);
-
+		$out->putUnsignedVarInt($this->type->value);
+		$out->putVarInt(0);
 		if($this->type === PlayerLocationType::PLAYER_LOCATION_COORDINATES){
 			if($this->position === null){ // this should never be the case
 				throw new \LogicException("PlayerLocationPacket with type PLAYER_LOCATION_COORDINATES require a position to be provided");

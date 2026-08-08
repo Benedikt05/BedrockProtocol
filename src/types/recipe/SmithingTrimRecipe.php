@@ -44,11 +44,11 @@ final class SmithingTrimRecipe extends RecipeWithTypeId{
 
 	public static function decode(int $typeId, PacketSerializer $in) : self{
 		$recipeId = $in->getString();
-		$template = $in->getRecipeIngredient();
-		$input = $in->getRecipeIngredient();
-		$addition = $in->getRecipeIngredient();
+		$template = RecipeIngredient::read($in);
+		$input = RecipeIngredient::read($in);
+		$addition = RecipeIngredient::read($in);
 		$blockName = $in->getString();
-		$recipeNetId = $in->readRecipeNetId();
+		$recipeNetId = $in->getVarInt();
 
 		return new self(
 			$typeId,
@@ -63,10 +63,10 @@ final class SmithingTrimRecipe extends RecipeWithTypeId{
 
 	public function encode(PacketSerializer $out) : void{
 		$out->putString($this->recipeId);
-		$out->putRecipeIngredient($this->template);
-		$out->putRecipeIngredient($this->input);
-		$out->putRecipeIngredient($this->addition);
+		$this->template->write($out);
+		$this->input->write($out);
+		$this->addition->write($out);
 		$out->putString($this->blockName);
-		$out->writeRecipeNetId($this->recipeNetId);
+		$out->putVarInt($this->recipeNetId);
 	}
 }

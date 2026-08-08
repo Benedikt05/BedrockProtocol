@@ -19,22 +19,31 @@ use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 final class PlayerAuthInputVehicleInfo{
 
 	public function __construct(
-		private float $vehicleRotationX,
-		private float $vehicleRotationZ,
-		private int $predictedVehicleActorUniqueId
-	){}
+		private ?float $vehicleRotationX,
+		private ?float $vehicleRotationZ,
+		private ?int $predictedVehicleActorUniqueId
+	){
+	}
 
-	public function getVehicleRotationX() : float{ return $this->vehicleRotationX; }
+	public function getVehicleRotationX() : ?float{ return $this->vehicleRotationX; }
 
-	public function getVehicleRotationZ() : float{ return $this->vehicleRotationZ; }
+	public function getVehicleRotationZ() : ?float{ return $this->vehicleRotationZ; }
 
-	public function getPredictedVehicleActorUniqueId() : int{ return $this->predictedVehicleActorUniqueId; }
+	public function getPredictedVehicleActorUniqueId() : ?int{ return $this->predictedVehicleActorUniqueId; }
 
 	public static function read(PacketSerializer $in) : self{
-		$vehicleRotationX = $in->getLFloat();
-		$vehicleRotationZ = $in->getLFloat();
-		$predictedVehicleActorUniqueId = $in->getActorUniqueId();
-
+		$vehicleRotationX = null;
+		$vehicleRotationZ = null;
+		// @phpstan-ignore-next-line
+		if($in->getBool() && $in->getBool()){
+			$vehicleRotationX = $in->getLFloat();
+			$vehicleRotationZ = $in->getLFloat();
+		}
+		$predictedVehicleActorUniqueId = null;
+		// @phpstan-ignore-next-line
+		if($in->getBool() && $in->getBool()){
+			$predictedVehicleActorUniqueId = $in->getActorUniqueId();
+		}
 		return new self($vehicleRotationX, $vehicleRotationZ, $predictedVehicleActorUniqueId);
 	}
 
@@ -42,5 +51,9 @@ final class PlayerAuthInputVehicleInfo{
 		$out->putLFloat($this->vehicleRotationX);
 		$out->putLFloat($this->vehicleRotationZ);
 		$out->putActorUniqueId($this->predictedVehicleActorUniqueId);
+	}
+
+	public function isNull() : bool{
+		return $this->vehicleRotationX !== null && $this->vehicleRotationZ !== null && $this->predictedVehicleActorUniqueId !== null;
 	}
 }

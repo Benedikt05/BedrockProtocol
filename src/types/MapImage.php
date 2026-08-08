@@ -77,8 +77,7 @@ final class MapImage{
 			$serializer = new BinaryStream();
 			for($y = 0; $y < $this->height; ++$y){
 				for($x = 0; $x < $this->width; ++$x){
-					//if mojang had any sense this would just be a regular LE int
-					$serializer->putUnsignedVarInt(Binary::flipIntEndianness($this->pixels[$y][$x]->toRGBA()));
+					$serializer->putLInt(Binary::flipIntEndianness($this->pixels[$y][$x]->toRGBA()));
 				}
 			}
 			$this->encodedPixelCache = $serializer->getBuffer();
@@ -103,7 +102,7 @@ final class MapImage{
 		for($y = 0; $y < $height; ++$y){
 			$row = [];
 			for($x = 0; $x < $width; ++$x){
-				$row[] = Color::fromRGBA(Binary::flipIntEndianness($input->getUnsignedVarInt()));
+				$row[] = Color::fromRGBA(Binary::flipIntEndianness($input->getLInt()));
 			}
 			$pixels[] = $row;
 		}

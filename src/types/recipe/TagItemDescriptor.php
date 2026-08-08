@@ -23,18 +23,21 @@ final class TagItemDescriptor implements ItemDescriptor{
 	public const ID = ItemDescriptorType::TAG;
 
 	public function __construct(
-		private string $tag
+		private string $tag,
+		private int $meta = 0x7fff
 	){}
+
 
 	public function getTag() : string{ return $this->tag; }
 
 	public static function read(PacketSerializer $in) : self{
 		$tag = $in->getString();
-
-		return new self($tag);
+		$meta = $in->getVarInt();
+		return new self($tag, $meta);
 	}
 
 	public function write(PacketSerializer $out) : void{
 		$out->putString($this->tag);
+		$out->putVarInt($this->meta);
 	}
 }

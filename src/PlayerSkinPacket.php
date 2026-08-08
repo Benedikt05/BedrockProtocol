@@ -41,17 +41,15 @@ class PlayerSkinPacket extends DataPacket implements ClientboundPacket, Serverbo
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->uuid = $in->getUUID();
 		$this->skin = $in->getSkin();
-		$this->newSkinName = $in->getString();
 		$this->oldSkinName = $in->getString();
-		$this->skin->setVerified($in->getBool());
+		$this->newSkinName = $in->getString();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putUUID($this->uuid);
 		$out->putSkin($this->skin);
-		$out->putString($this->newSkinName);
 		$out->putString($this->oldSkinName);
-		$out->putBool($this->skin->isVerified());
+		$out->putString($this->newSkinName);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

@@ -30,14 +30,14 @@ final class CreativeGroupEntry{
 	public function getIcon() : ItemStack{ return $this->icon; }
 
 	public static function read(PacketSerializer $in) : self{
-		$categoryId = $in->getLInt();
+		$categoryId = $in->getByte();
 		$categoryName = $in->getString();
 		$icon = $in->getItemStackWithoutStackId();
 		return new self($categoryId, $categoryName, $icon);
 	}
 
 	public function write(PacketSerializer $out) : void{
-		$out->putLInt($this->categoryId);
+		$out->putByte($this->categoryId);
 		$out->putString($this->categoryName);
 		$out->putItemStackWithoutStackId($this->icon);
 	}

@@ -17,46 +17,42 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\types\ChunkPosition;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
-use pocketmine\utils\Limits;
 use function count;
-use const PHP_INT_MAX;
 
 class LevelChunkPacket extends DataPacket implements ClientboundPacket{
 	public const NETWORK_ID = ProtocolInfo::LEVEL_CHUNK_PACKET;
 
-	/**
-	 * Client will request all subchunks as needed up to the top of the world
-	 */
-	private const CLIENT_REQUEST_FULL_COLUMN_FAKE_COUNT = Limits::UINT32_MAX;
-	/**
-	 * Client will request subchunks as needed up to the height written in the packet, and assume that anything above
-	 * that height is air (wtf mojang ...)
-	 */
-	private const CLIENT_REQUEST_TRUNCATED_COLUMN_FAKE_COUNT = Limits::UINT32_MAX - 1;
-
-	//this appears large enough for a world height of 1024 blocks - it may need to be increased in the future
 	private const MAX_BLOB_HASHES = 64;
-
 	private ChunkPosition $chunkPosition;
 	/** @phpstan-var DimensionIds::* */
 	private int $dimensionId;
 	private int $subChunkCount;
-	private bool $clientSubChunkRequestsEnabled;
-	/** @var int[]|null */
-	private ?array $usedBlobHashes = null;
+	private ?int $clientRequestSubChunkLimit = null;
+	private bool $cacheEnabled;
+	/** @var int[] */
+	private array $usedBlobHashes = [];
 	private string $extraPayload;
 
 	/**
 	 * @generate-create-func
+	 *
 	 * @param int[] $usedBlobHashes
-	 * @phpstan-param DimensionIds::* $dimensionId
 	 */
-	public static function create(ChunkPosition $chunkPosition, int $dimensionId, int $subChunkCount, bool $clientSubChunkRequestsEnabled, ?array $usedBlobHashes, string $extraPayload) : self{
+	public static function create(
+		ChunkPosition $chunkPosition,
+		int $dimensionId,
+		int $subChunkCount,
+		?int $clientRequestSubChunkLimit,
+		bool $cacheEnabled,
+		array $usedBlobHashes,
+		string $extraPayload
+	): self{
 		$result = new self;
 		$result->chunkPosition = $chunkPosition;
 		$result->dimensionId = $dimensionId;
 		$result->subChunkCount = $subChunkCount;
-		$result->clientSubChunkRequestsEnabled = $clientSubChunkRequestsEnabled;
+		$result->clientRequestSubChunkLimit = $clientRequestSubChunkLimit;
+		$result->cacheEnabled = $cacheEnabled;
 		$result->usedBlobHashes = $usedBlobHashes;
 		$result->extraPayload = $extraPayload;
 		return $result;
@@ -64,24 +60,30 @@ class LevelChunkPacket extends DataPacket implements ClientboundPacket{
 
 	public function getChunkPosition() : ChunkPosition{ return $this->chunkPosition; }
 
-	public function getDimensionId() : int{ return $this->dimensionId; }
+	public function getDimensionId() : int{
+		return $this->dimensionId;
+	}
 
 	public function getSubChunkCount() : int{
 		return $this->subChunkCount;
 	}
 
 	public function isClientSubChunkRequestEnabled() : bool{
-		return $this->clientSubChunkRequestsEnabled;
+		return $this->clientRequestSubChunkLimit !== null;
+	}
+
+	public function getClientRequestSubChunkLimit() : ?int{
+		return $this->clientRequestSubChunkLimit;
 	}
 
 	public function isCacheEnabled() : bool{
-		return $this->usedBlobHashes !== null;
+		return $this->cacheEnabled;
 	}
 
 	/**
-	 * @return int[]|null
+	 * @return int[]
 	 */
-	public function getUsedBlobHashes() : ?array{
+	public function getUsedBlobHashes() : array{
 		return $this->usedBlobHashes;
 	}
 
@@ -92,55 +94,39 @@ class LevelChunkPacket extends DataPacket implements ClientboundPacket{
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->chunkPosition = ChunkPosition::read($in);
 		$this->dimensionId = $in->getVarInt();
+		$this->subChunkCount = $in->getUnsignedVarInt();
 
-		$subChunkCountButNotReally = $in->getUnsignedVarInt();
-		if($subChunkCountButNotReally === self::CLIENT_REQUEST_FULL_COLUMN_FAKE_COUNT){
-			$this->clientSubChunkRequestsEnabled = true;
-			$this->subChunkCount = PHP_INT_MAX;
-		}elseif($subChunkCountButNotReally === self::CLIENT_REQUEST_TRUNCATED_COLUMN_FAKE_COUNT){
-			$this->clientSubChunkRequestsEnabled = true;
-			$this->subChunkCount = $in->getLShort();
-		}else{
-			$this->clientSubChunkRequestsEnabled = false;
-			$this->subChunkCount = $subChunkCountButNotReally;
+		$this->clientRequestSubChunkLimit = $in->getBool() ? $in->getVarInt() : null;
+		$this->cacheEnabled = $in->getBool();
+
+		$this->usedBlobHashes = [];
+		$count = $in->getUnsignedVarInt();
+		if($count > self::MAX_BLOB_HASHES){
+			throw new PacketDecodeException("Expected at most " . self::MAX_BLOB_HASHES . " blob hashes, got " . $count);
+		}
+		for($i = 0; $i < $count; ++$i){
+			$this->usedBlobHashes[] = $in->getLLong();
 		}
 
-		$cacheEnabled = $in->getBool();
-		if($cacheEnabled){
-			$this->usedBlobHashes = [];
-			$count = $in->getUnsignedVarInt();
-			if($count > self::MAX_BLOB_HASHES){
-				throw new PacketDecodeException("Expected at most " . self::MAX_BLOB_HASHES . " blob hashes, got " . $count);
-			}
-			for($i = 0; $i < $count; ++$i){
-				$this->usedBlobHashes[] = $in->getLLong();
-			}
-		}
 		$this->extraPayload = $in->getString();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$this->chunkPosition->write($out);
 		$out->putVarInt($this->dimensionId);
+		$out->putUnsignedVarInt($this->subChunkCount);
 
-		if($this->clientSubChunkRequestsEnabled){
-			if($this->subChunkCount === PHP_INT_MAX){
-				$out->putUnsignedVarInt(self::CLIENT_REQUEST_FULL_COLUMN_FAKE_COUNT);
-			}else{
-				$out->putUnsignedVarInt(self::CLIENT_REQUEST_TRUNCATED_COLUMN_FAKE_COUNT);
-				$out->putLShort($this->subChunkCount);
-			}
-		}else{
-			$out->putUnsignedVarInt($this->subChunkCount);
+		$out->putBool($this->clientRequestSubChunkLimit !== null);
+		if($this->clientRequestSubChunkLimit !== null){
+			$out->putVarInt($this->clientRequestSubChunkLimit);
+		}
+		$out->putBool($this->cacheEnabled);
+
+		$out->putUnsignedVarInt(count($this->usedBlobHashes));
+		foreach($this->usedBlobHashes as $hash){
+			$out->putLLong($hash);
 		}
 
-		$out->putBool($this->usedBlobHashes !== null);
-		if($this->usedBlobHashes !== null){
-			$out->putUnsignedVarInt(count($this->usedBlobHashes));
-			foreach($this->usedBlobHashes as $hash){
-				$out->putLLong($hash);
-			}
-		}
 		$out->putString($this->extraPayload);
 	}
 

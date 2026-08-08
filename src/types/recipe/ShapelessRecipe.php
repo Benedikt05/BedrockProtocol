@@ -34,7 +34,7 @@ final class ShapelessRecipe extends RecipeWithTypeId{
 		private UuidInterface $uuid,
 		private string $blockName,
 		private int $priority,
-		private RecipeUnlockingRequirement $unlockingRequirement,
+		private ?RecipeUnlockingRequirement $unlockingRequirement,
 		private int $recipeNetId
 	){
 		parent::__construct($typeId);
@@ -72,7 +72,7 @@ final class ShapelessRecipe extends RecipeWithTypeId{
 		return $this->priority;
 	}
 
-	public function getUnlockingRequirement() : RecipeUnlockingRequirement{ return $this->unlockingRequirement; }
+	public function getUnlockingRequirement() : ?RecipeUnlockingRequirement{ return $this->unlockingRequirement; }
 
 	public function getRecipeNetId() : int{
 		return $this->recipeNetId;
@@ -82,7 +82,7 @@ final class ShapelessRecipe extends RecipeWithTypeId{
 		$recipeId = $in->getString();
 		$input = [];
 		for($j = 0, $ingredientCount = $in->getUnsignedVarInt(); $j < $ingredientCount; ++$j){
-			$input[] = $in->getRecipeIngredient();
+			$input[] = RecipeIngredient::read($in);;
 		}
 		$output = [];
 		for($k = 0, $resultCount = $in->getUnsignedVarInt(); $k < $resultCount; ++$k){
@@ -91,9 +91,12 @@ final class ShapelessRecipe extends RecipeWithTypeId{
 		$uuid = $in->getUUID();
 		$block = $in->getString();
 		$priority = $in->getVarInt();
-		$unlockingRequirement = RecipeUnlockingRequirement::read($in);
+		$unlockingRequirement = null;
+		if($in->getBool()) {
+			$unlockingRequirement = RecipeUnlockingRequirement::read($in);
+		}
 
-		$recipeNetId = $in->readRecipeNetId();
+		$recipeNetId = $in->getVarInt();
 
 		return new self($recipeType, $recipeId, $input, $output, $uuid, $block, $priority, $unlockingRequirement, $recipeNetId);
 	}
@@ -102,7 +105,7 @@ final class ShapelessRecipe extends RecipeWithTypeId{
 		$out->putString($this->recipeId);
 		$out->putUnsignedVarInt(count($this->inputs));
 		foreach($this->inputs as $item){
-			$out->putRecipeIngredient($item);
+			$item->write($out);
 		}
 
 		$out->putUnsignedVarInt(count($this->outputs));
@@ -113,8 +116,9 @@ final class ShapelessRecipe extends RecipeWithTypeId{
 		$out->putUUID($this->uuid);
 		$out->putString($this->blockName);
 		$out->putVarInt($this->priority);
-		$this->unlockingRequirement->write($out);
+		$out->putBool($this->unlockingRequirement !== null);
+		$this->unlockingRequirement?->write($out);
 
-		$out->writeRecipeNetId($this->recipeNetId);
+		$out->putVarInt($this->recipeNetId);
 	}
 }

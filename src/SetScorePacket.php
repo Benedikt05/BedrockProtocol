@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol;
 
+use InvalidArgumentException;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\types\ScorePacketEntry;
 use function count;
@@ -21,10 +22,6 @@ use function count;
 class SetScorePacket extends DataPacket implements ClientboundPacket{
 	public const NETWORK_ID = ProtocolInfo::SET_SCORE_PACKET;
 
-	public const TYPE_CHANGE = 0;
-	public const TYPE_REMOVE = 1;
-
-	public int $type;
 	/** @var ScorePacketEntry[] */
 	public array $entries = [];
 
@@ -32,58 +29,70 @@ class SetScorePacket extends DataPacket implements ClientboundPacket{
 	 * @generate-create-func
 	 * @param ScorePacketEntry[] $entries
 	 */
-	public static function create(int $type, array $entries) : self{
+	public static function create(array $entries) : self{
 		$result = new self;
-		$result->type = $type;
 		$result->entries = $entries;
 		return $result;
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->type = $in->getByte();
 		for($i = 0, $i2 = $in->getUnsignedVarInt(); $i < $i2; ++$i){
 			$entry = new ScorePacketEntry();
+			$entry->type = $in->getUnsignedVarInt();
+			$in->getString();
 			$entry->scoreboardId = $in->getVarLong();
-			$entry->objectiveName = $in->getString();
-			$entry->score = $in->getLInt();
-			if($this->type !== self::TYPE_REMOVE){
-				$entry->type = $in->getByte();
-				switch($entry->type){
-					case ScorePacketEntry::TYPE_PLAYER:
-					case ScorePacketEntry::TYPE_ENTITY:
-						$entry->actorUniqueId = $in->getActorUniqueId();
-						break;
-					case ScorePacketEntry::TYPE_FAKE_PLAYER:
-						$entry->customName = $in->getString();
-						break;
-					default:
-						throw new PacketDecodeException("Unknown entry type $entry->type");
-				}
+
+			switch($entry->type){
+				case ScorePacketEntry::TYPE_REMOVE:
+					$entry->objectiveName = $in->readOptional(fn() => $in->getString());
+					break;
+				case ScorePacketEntry::TYPE_PLAYER:
+				case ScorePacketEntry::TYPE_ENTITY:
+					$entry->objectiveName = $in->getString();
+					$entry->score = $in->getLInt();
+					$entry->actorUniqueId = $in->getActorUniqueId();
+					break;
+				case ScorePacketEntry::TYPE_FAKE_PLAYER:
+					$entry->objectiveName = $in->getString();
+					$entry->score = $in->getLInt();
+					$entry->customName = $in->getString();
+					break;
+				default:
+					throw new PacketDecodeException("Unknown entry type $entry->type");
 			}
 			$this->entries[] = $entry;
 		}
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putByte($this->type);
 		$out->putUnsignedVarInt(count($this->entries));
 		foreach($this->entries as $entry){
+			$out->putUnsignedVarInt($entry->type);
+			$out->putString(match ($entry->type) {
+				ScorePacketEntry::TYPE_REMOVE => "remove",
+				ScorePacketEntry::TYPE_PLAYER => "changeplayer",
+				ScorePacketEntry::TYPE_ENTITY => "changeentity",
+				ScorePacketEntry::TYPE_FAKE_PLAYER => "changefakeplayer",
+				default => throw new InvalidArgumentException("Unknown type $entry->type")
+			});
 			$out->putVarLong($entry->scoreboardId);
-			$out->putString($entry->objectiveName);
-			$out->putLInt($entry->score);
-			if($this->type !== self::TYPE_REMOVE){
-				$out->putByte($entry->type);
-				switch($entry->type){
-					case ScorePacketEntry::TYPE_PLAYER:
-					case ScorePacketEntry::TYPE_ENTITY:
-						$out->putActorUniqueId($entry->actorUniqueId);
-						break;
-					case ScorePacketEntry::TYPE_FAKE_PLAYER:
-						$out->putString($entry->customName);
-						break;
-					default:
-						throw new \InvalidArgumentException("Unknown entry type $entry->type");
-				}
+			switch($entry->type){
+				case ScorePacketEntry::TYPE_REMOVE:
+					$out->writeOptional($entry->objectiveName, fn($objectiveName) => $out->putString($objectiveName));
+					break;
+				case ScorePacketEntry::TYPE_PLAYER:
+				case ScorePacketEntry::TYPE_ENTITY:
+					$out->putString($entry->objectiveName ?? throw new InvalidArgumentException("Objective name must be set for player/entity entry"));
+					$out->putLInt($entry->score);
+					$out->putActorUniqueId($entry->actorUniqueId);
+					break;
+				case ScorePacketEntry::TYPE_FAKE_PLAYER:
+					$out->putString($entry->objectiveName ?? throw new InvalidArgumentException("Objective name must be set for fake player entry"));
+					$out->putLInt($entry->score);
+					$out->putString($entry->customName);
+					break;
+				default:
+					throw new InvalidArgumentException("Unknown entry type $entry->type");
 			}
 		}
 	}

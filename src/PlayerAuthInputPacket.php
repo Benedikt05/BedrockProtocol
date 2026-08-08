@@ -132,7 +132,7 @@ class PlayerAuthInputPacket extends DataPacket implements ServerboundPacket{
 		?ItemInteractionData $itemInteractionData,
 		?ItemStackRequest $itemStackRequest,
 		?array $blockActions,
-		?PlayerAuthInputVehicleInfo $vehicleInfo,
+		PlayerAuthInputVehicleInfo $vehicleInfo,
 		float $analogMoveVecX,
 		float $analogMoveVecZ,
 		Vector3 $cameraOrientation,
@@ -145,7 +145,7 @@ class PlayerAuthInputPacket extends DataPacket implements ServerboundPacket{
 		$inputFlags->set(PlayerAuthInputFlags::PERFORM_ITEM_STACK_REQUEST, $itemStackRequest !== null);
 		$inputFlags->set(PlayerAuthInputFlags::PERFORM_ITEM_INTERACTION, $itemInteractionData !== null);
 		$inputFlags->set(PlayerAuthInputFlags::PERFORM_BLOCK_ACTIONS, $blockActions !== null);
-		$inputFlags->set(PlayerAuthInputFlags::IN_CLIENT_PREDICTED_VEHICLE, $vehicleInfo !== null);
+		$inputFlags->set(PlayerAuthInputFlags::IN_CLIENT_PREDICTED_VEHICLE, !$vehicleInfo->isNull());
 
 		return self::internalCreate(
 			$position,
@@ -249,7 +249,7 @@ class PlayerAuthInputPacket extends DataPacket implements ServerboundPacket{
 		return $this->blockActions;
 	}
 
-	public function getVehicleInfo() : ?PlayerAuthInputVehicleInfo{ return $this->vehicleInfo; }
+	public function getVehicleInfo() : PlayerAuthInputVehicleInfo{ return $this->vehicleInfo; }
 
 	public function getAnalogMoveVecX() : float{ return $this->analogMoveVecX; }
 
@@ -266,34 +266,44 @@ class PlayerAuthInputPacket extends DataPacket implements ServerboundPacket{
 		$this->moveVecX = $in->getLFloat();
 		$this->moveVecZ = $in->getLFloat();
 		$this->headYaw = $in->getLFloat();
-		$this->inputFlags = BitSet::read($in, PlayerAuthInputFlags::NUMBER_OF_FLAGS);
+		$this->inputFlags = new BitSet(66);
+		if($in->getBool()){
+			$count = $in->getUnsignedVarInt();
+			for($i = 0; $i < $count; ++$i){
+				$flag = $in->getVarInt();
+				if($flag < 0 || $flag >= 66){
+					throw new PacketDecodeException("Unknown input flag $flag");
+				}
+				$this->inputFlags->set($flag, true);
+			}
+		}
 		$this->inputMode = $in->getUnsignedVarInt();
 		$this->playMode = $in->getUnsignedVarInt();
-		$this->interactionMode = $in->getUnsignedVarInt();
+		$this->interactionMode = $in->getVarInt();
 		$this->interactRotation = $in->getVector2();
 		$this->tick = $in->getUnsignedVarLong();
 		$this->delta = $in->getVector3();
-		if($this->inputFlags->get(PlayerAuthInputFlags::PERFORM_ITEM_INTERACTION)){
+		// @phpstan-ignore-next-line
+		if($in->getBool() && $in->getBool()){
 			$this->itemInteractionData = ItemInteractionData::read($in);
 		}
-		if($this->inputFlags->get(PlayerAuthInputFlags::PERFORM_ITEM_STACK_REQUEST)){
+		// @phpstan-ignore-next-line
+		if($in->getBool() && $in->getBool()){
 			$this->itemStackRequest = ItemStackRequest::read($in);
 		}
-		if($this->inputFlags->get(PlayerAuthInputFlags::PERFORM_BLOCK_ACTIONS)){
+		// @phpstan-ignore-next-line
+		if($in->getBool() && $in->getBool()){
 			$this->blockActions = [];
-			$max = $in->getVarInt();
+			$max = $in->getUnsignedVarInt();
 			for($i = 0; $i < $max; ++$i){
 				$actionType = $in->getVarInt();
-				$this->blockActions[] = match(true){
-					PlayerBlockActionWithBlockInfo::isValidActionType($actionType) => PlayerBlockActionWithBlockInfo::read($in, $actionType),
-					$actionType === PlayerAction::STOP_BREAK => new PlayerBlockActionStopBreak(),
-					default => throw new PacketDecodeException("Unexpected block action type $actionType")
-				};
+				if(PlayerBlockActionWithBlockInfo::isValidActionType($actionType)){
+					$this->blockActions[] = PlayerBlockActionWithBlockInfo::read($in, $actionType);
+				}
 			}
 		}
-		if($this->inputFlags->get(PlayerAuthInputFlags::IN_CLIENT_PREDICTED_VEHICLE)){
-			$this->vehicleInfo = PlayerAuthInputVehicleInfo::read($in);
-		}
+
+		$this->vehicleInfo = PlayerAuthInputVehicleInfo::read($in);
 		$this->analogMoveVecX = $in->getLFloat();
 		$this->analogMoveVecZ = $in->getLFloat();
 		$this->cameraOrientation = $in->getVector3();

@@ -27,19 +27,20 @@ final class MolangItemDescriptor implements ItemDescriptor{
 		private int $molangVersion
 	){}
 
+
 	public function getMolangExpression() : string{ return $this->molangExpression; }
 
 	public function getMolangVersion() : int{ return $this->molangVersion; }
 
 	public static function read(PacketSerializer $in) : self{
 		$expression = $in->getString();
-		$version = $in->getByte();
+		$version = $in->getLShort();
 
 		return new self($expression, $version);
 	}
 
 	public function write(PacketSerializer $out) : void{
 		$out->putString($this->molangExpression);
-		$out->putByte($this->molangVersion);
+		$out->putLShort($this->molangVersion);
 	}
 }

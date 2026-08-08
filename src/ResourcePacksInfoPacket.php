@@ -82,7 +82,7 @@ class ResourcePacksInfoPacket extends DataPacket implements ClientboundPacket{
 		$out->putBool($this->forceDisableVibrantVisuals);
 		$out->putUUID($this->worldTemplateId);
 		$out->putString($this->worldTemplateVersion);
-		$out->putLShort(count($this->resourcePackEntries));
+		$out->putUnsignedVarInt(count($this->resourcePackEntries));
 		foreach($this->resourcePackEntries as $entry){
 			$entry->write($out);
 		}

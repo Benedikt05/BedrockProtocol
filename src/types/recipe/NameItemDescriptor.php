@@ -12,35 +12,32 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\network\mcpe\protocol\types;
+namespace pocketmine\network\mcpe\protocol\types\recipe;
 
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\protocol\types\GetTypeIdFromConstTrait;
+final class NameItemDescriptor implements ItemDescriptor{
+	use GetTypeIdFromConstTrait;
 
-final class SubChunkPosition{
-
+	public const ID = ItemDescriptorType::NAME;
 	public function __construct(
-		private int $x,
-		private int $y,
-		private int $z,
-	){}
+		private string $name,
+		private int $meta
+	){
+	}
 
-	public function getX() : int{ return $this->x; }
+	public function getName() : string{ return $this->name; }
 
-	public function getY() : int{ return $this->y; }
-
-	public function getZ() : int{ return $this->z; }
+	public function getMeta() : int{ return $this->meta; }
 
 	public static function read(PacketSerializer $in) : self{
-		$x = $in->getLInt();
-		$y = $in->getLInt();
-		$z = $in->getLInt();
-
-		return new self($x, $y, $z);
+		$name = $in->getString();
+		$meta = $in->getVarInt();
+		return new self($name, $meta);
 	}
 
 	public function write(PacketSerializer $out) : void{
-		$out->putLInt($this->x);
-		$out->putLInt($this->y);
-		$out->putLInt($this->z);
+		$out->putString($this->name);
+		$out->putVarInt($this->meta);
 	}
 }

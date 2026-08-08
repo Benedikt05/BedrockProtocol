@@ -60,7 +60,7 @@ class SubChunkRequestPacket extends DataPacket implements ServerboundPacket{
 		for($i = 0, $count = $in->getUnsignedVarInt(); $i < $count; $i++){
 			$this->entries[] = SubChunkPositionOffset::read($in);
 		}
-		$this->basePosition = SubChunkPosition::readCereal($in);
+		$this->basePosition = SubChunkPosition::read($in);
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -70,7 +70,7 @@ class SubChunkRequestPacket extends DataPacket implements ServerboundPacket{
 		foreach($this->entries as $entry){
 			$entry->write($out);
 		}
-		$this->basePosition->writeCereal($out);
+		$this->basePosition->write($out);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

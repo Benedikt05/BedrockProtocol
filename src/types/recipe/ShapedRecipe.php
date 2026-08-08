@@ -37,7 +37,7 @@ final class ShapedRecipe extends RecipeWithTypeId{
 		string $blockType, //TODO: rename this
 		private int $priority,
 		private bool $symmetric,
-		private RecipeUnlockingRequirement $unlockingRequirement,
+		private ?RecipeUnlockingRequirement $unlockingRequirement,
 		private int $recipeNetId
 	){
 		parent::__construct($typeId);
@@ -108,13 +108,11 @@ final class ShapedRecipe extends RecipeWithTypeId{
 		$recipeId = $in->getString();
 		$width = $in->getVarInt();
 		$height = $in->getVarInt();
-		$input = [];
-		for($row = 0; $row < $height; ++$row){
-			for($column = 0; $column < $width; ++$column){
-				$input[$row][$column] = $in->getRecipeIngredient();
-			}
+		$ingredients = [];
+		for($i = 0, $ingredientCount = $in->getUnsignedVarInt(); $i < $ingredientCount; ++$i){
+			$ingredients[] = RecipeIngredient::read($in);
 		}
-
+		$input = array_chunk($ingredients, max(1, $width));
 		$output = [];
 		for($k = 0, $resultCount = $in->getUnsignedVarInt(); $k < $resultCount; ++$k){
 			$output[] = $in->getItemStackWithoutStackId();
@@ -123,9 +121,12 @@ final class ShapedRecipe extends RecipeWithTypeId{
 		$block = $in->getString();
 		$priority = $in->getVarInt();
 		$symmetric = $in->getBool();
-		$unlockingRequirement = RecipeUnlockingRequirement::read($in);
+		$unlockingRequirement = null;
+		if($in->getBool()) {
+			$unlockingRequirement = RecipeUnlockingRequirement::read($in);
+		}
 
-		$recipeNetId = $in->readRecipeNetId();
+		$recipeNetId = $in->getVarInt();
 
 		return new self($recipeType, $recipeId, $input, $output, $uuid, $block, $priority, $symmetric, $unlockingRequirement, $recipeNetId);
 	}
@@ -134,9 +135,10 @@ final class ShapedRecipe extends RecipeWithTypeId{
 		$out->putString($this->recipeId);
 		$out->putVarInt($this->getWidth());
 		$out->putVarInt($this->getHeight());
+		$out->putUnsignedVarInt($this->getWidth() * $this->getHeight());
 		foreach($this->input as $row){
 			foreach($row as $ingredient){
-				$out->putRecipeIngredient($ingredient);
+				$ingredient->write($out);
 			}
 		}
 
@@ -149,8 +151,9 @@ final class ShapedRecipe extends RecipeWithTypeId{
 		$out->putString($this->blockName);
 		$out->putVarInt($this->priority);
 		$out->putBool($this->symmetric);
-		$this->unlockingRequirement->write($out);
+		$out->putBool($this->unlockingRequirement !== null);
+		$this->unlockingRequirement?->write($out);
 
-		$out->writeRecipeNetId($this->recipeNetId);
+		$out->putVarInt($this->recipeNetId);
 	}
 }

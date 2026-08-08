@@ -117,7 +117,7 @@ final class LevelSettings{
 		$this->platformBroadcastMode = $in->getVarInt();
 		$this->commandsEnabled = $in->getBool();
 		$this->isTexturePacksRequired = $in->getBool();
-		$this->gameRules = $in->getGameRules(true);
+		$this->gameRules = $in->getGameRules();
 		$this->experiments = Experiments::read($in);
 		$this->hasBonusChestEnabled = $in->getBool();
 		$this->hasStartWithMapEnabled = $in->getBool();
@@ -156,7 +156,7 @@ final class LevelSettings{
 		$out->putBool($this->createdInEditorMode);
 		$out->putBool($this->exportedFromEditorMode);
 		$out->putVarInt($this->time);
-		$out->putVarInt($this->eduEditionOffer);
+		$out->putUnsignedVarInt($this->eduEditionOffer);
 		$out->putBool($this->hasEduFeaturesEnabled);
 		$out->putString($this->eduProductUUID);
 		$out->putLFloat($this->rainLevel);
@@ -168,11 +168,11 @@ final class LevelSettings{
 		$out->putVarInt($this->platformBroadcastMode);
 		$out->putBool($this->commandsEnabled);
 		$out->putBool($this->isTexturePacksRequired);
-		$out->putGameRules($this->gameRules, true);
+		$out->putGameRules($this->gameRules);
 		$this->experiments->write($out);
 		$out->putBool($this->hasBonusChestEnabled);
 		$out->putBool($this->hasStartWithMapEnabled);
-		$out->putVarInt($this->defaultPlayerPermission);
+		$out->putByte($this->defaultPlayerPermission);
 		$out->putLInt($this->serverChunkTickRadius);
 		$out->putBool($this->hasLockedBehaviorPack);
 		$out->putBool($this->hasLockedResourcePack);
