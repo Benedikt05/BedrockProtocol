@@ -29,7 +29,7 @@ class ClientboundMapItemDataPacket extends DataPacket implements ClientboundPack
 	public int $mapId;
 	public int $dimensionId = DimensionIds::OVERWORLD;
 	public bool $isLocked = false;
-	public BlockPosition $origin;
+	public ?BlockPosition $origin;
 
 	/** @var int[]|null */
 	public ?array $parentMapIds = null;
@@ -119,8 +119,11 @@ class ClientboundMapItemDataPacket extends DataPacket implements ClientboundPack
 		$out->putActorUniqueId($this->mapId);
 		$out->putByte($this->dimensionId);
 		$out->putBool($this->isLocked);
-		$out->putBlockPosition($this->origin);
+		$out->putBlockPosition($this->origin ??= new BlockPosition(0, 0, 0));
 
+		if(empty($this->parentMapIds)){
+			$this->parentMapIds[] = $this->mapId;
+		}
 		$out->putBool($this->parentMapIds !== null);
 		if($this->parentMapIds !== null){
 			$out->putUnsignedVarInt(count($this->parentMapIds));
