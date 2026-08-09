@@ -26,33 +26,92 @@ use function base64_decode;
 final class ClientDataToSkinDataHelper{
 
 	private const PIECE_TYPE_MAP = [
+		// UNKNOWN
+		"unknown" => PersonaSkinPiece::PIECE_TYPE_UNKNOWN,
+		"persona_unknown" => PersonaSkinPiece::PIECE_TYPE_UNKNOWN,
+		// SKELETON
+		"skeleton" => PersonaSkinPiece::PIECE_TYPE_SKELETON,
 		"persona_skeleton" => PersonaSkinPiece::PIECE_TYPE_SKELETON,
+		// BODY
+		"body" => PersonaSkinPiece::PIECE_TYPE_BODY,
 		"persona_body" => PersonaSkinPiece::PIECE_TYPE_BODY,
+		// SKIN
+		"skin" => PersonaSkinPiece::PIECE_TYPE_SKIN,
 		"persona_skin" => PersonaSkinPiece::PIECE_TYPE_SKIN,
+		// BOTTOM
+		"bottom" => PersonaSkinPiece::PIECE_TYPE_BOTTOM,
 		"persona_bottom" => PersonaSkinPiece::PIECE_TYPE_BOTTOM,
+		// FEET
+		"feet" => PersonaSkinPiece::PIECE_TYPE_FEET,
 		"persona_feet" => PersonaSkinPiece::PIECE_TYPE_FEET,
+		// DRESS
+		"dress" => PersonaSkinPiece::PIECE_TYPE_DRESS,
 		"persona_dress" => PersonaSkinPiece::PIECE_TYPE_DRESS,
+		// TOP
+		"top" => PersonaSkinPiece::PIECE_TYPE_TOP,
 		"persona_top" => PersonaSkinPiece::PIECE_TYPE_TOP,
+		// HIGH_PANTS
+		"high_pants" => PersonaSkinPiece::PIECE_TYPE_HIGH_PANTS,
 		"persona_high_pants" => PersonaSkinPiece::PIECE_TYPE_HIGH_PANTS,
+		// HANDS
+		"hands" => PersonaSkinPiece::PIECE_TYPE_HANDS,
 		"persona_hand" => PersonaSkinPiece::PIECE_TYPE_HANDS,
+		// OUTERWEAR
+		"outerwear" => PersonaSkinPiece::PIECE_TYPE_OUTERWEAR,
 		"persona_outerwear" => PersonaSkinPiece::PIECE_TYPE_OUTERWEAR,
+		// FACIAL_HAIR
+		"facialhair" => PersonaSkinPiece::PIECE_TYPE_FACIAL_HAIR,
 		"persona_facial_hair" => PersonaSkinPiece::PIECE_TYPE_FACIAL_HAIR,
+		// MOUTH
+		"mouth" => PersonaSkinPiece::PIECE_TYPE_MOUTH,
 		"persona_mouth" => PersonaSkinPiece::PIECE_TYPE_MOUTH,
+		// EYES
+		"eyes" => PersonaSkinPiece::PIECE_TYPE_EYES,
 		"persona_eyes" => PersonaSkinPiece::PIECE_TYPE_EYES,
+		// HAIR
+		"hair" => PersonaSkinPiece::PIECE_TYPE_HAIR,
 		"persona_hair" => PersonaSkinPiece::PIECE_TYPE_HAIR,
+		// HOOD
+		"hood" => PersonaSkinPiece::PIECE_TYPE_HOOD,
 		"persona_hood" => PersonaSkinPiece::PIECE_TYPE_HOOD,
+		// BACK
+		"back" => PersonaSkinPiece::PIECE_TYPE_BACK,
 		"persona_back" => PersonaSkinPiece::PIECE_TYPE_BACK,
+		// FACE_ACCESSORY
+		"faceaccessory" => PersonaSkinPiece::PIECE_TYPE_FACE_ACCESSORY,
 		"persona_face_accessory" => PersonaSkinPiece::PIECE_TYPE_FACE_ACCESSORY,
+		// HEAD
+		"head" => PersonaSkinPiece::PIECE_TYPE_HEAD,
 		"persona_head" => PersonaSkinPiece::PIECE_TYPE_HEAD,
+		// LEGS
+		"legs" => PersonaSkinPiece::PIECE_TYPE_LEGS,
 		"persona_legs" => PersonaSkinPiece::PIECE_TYPE_LEGS,
+		// LEFT_LEG
+		"leftleg" => PersonaSkinPiece::PIECE_TYPE_LEFT_LEG,
 		"persona_left_leg" => PersonaSkinPiece::PIECE_TYPE_LEFT_LEG,
+		// RIGHT_LEG
+		"rightleg" => PersonaSkinPiece::PIECE_TYPE_RIGHT_LEG,
 		"persona_right_leg" => PersonaSkinPiece::PIECE_TYPE_RIGHT_LEG,
+		// ARMS
+		"arms" => PersonaSkinPiece::PIECE_TYPE_ARMS,
 		"persona_arms" => PersonaSkinPiece::PIECE_TYPE_ARMS,
+		// LEFT_ARM
+		"leftarm" => PersonaSkinPiece::PIECE_TYPE_LEFT_ARM,
 		"persona_left_arm" => PersonaSkinPiece::PIECE_TYPE_LEFT_ARM,
+		// RIGHT_ARM
+		"rightarm" => PersonaSkinPiece::PIECE_TYPE_RIGHT_ARM,
 		"persona_right_arm" => PersonaSkinPiece::PIECE_TYPE_RIGHT_ARM,
+		// CAPES
+		"capes" => PersonaSkinPiece::PIECE_TYPE_CAPES,
 		"persona_capes" => PersonaSkinPiece::PIECE_TYPE_CAPES,
+		// CLASSIC_SKIN
+		"classicskin" => PersonaSkinPiece::PIECE_TYPE_CLASSIC_SKIN,
 		"persona_classic_skin" => PersonaSkinPiece::PIECE_TYPE_CLASSIC_SKIN,
+		// EMOTE
+		"emote" => PersonaSkinPiece::PIECE_TYPE_EMOTE,
 		"persona_emote" => PersonaSkinPiece::PIECE_TYPE_EMOTE,
+		// UNSUPPORTED
+		"unsupported" => PersonaSkinPiece::PIECE_TYPE_UNSUPPORTED,
 	];
 	/**
 	 * @throws \InvalidArgumentException
@@ -140,6 +199,7 @@ final class ClientDataToSkinDataHelper{
 	 * @throws \InvalidArgumentException
 	 */
 	private static function convertPieceType(string $pieceType) : int{
-		return self::PIECE_TYPE_MAP[$pieceType] ?? throw new \InvalidArgumentException("Unknown persona piece type \"$pieceType\"");
+		$name = strtolower($pieceType);
+		return self::PIECE_TYPE_MAP[$name] ?? throw new \InvalidArgumentException("Unknown persona piece type \"$pieceType\"");
 	}
 }
