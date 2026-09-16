@@ -31,11 +31,12 @@ class MoveActorDeltaPacket extends DataPacket implements ClientboundPacket{
 	public bool $teleport = false;
 	public bool $forceMoveLocalEntity = false;
 	public bool $forceCompletion = false;
+	public int $ticks = 0;
 
 	/**
 	 * @throws BinaryDataException
 	 */
-	private function maybeReadCoord(int $flag, PacketSerializer $in) : ?float{
+	private function maybeReadCoord(PacketSerializer $in) : ?float{
 		if($in->getBool()){
 			return $in->getLFloat();
 		}
@@ -45,7 +46,7 @@ class MoveActorDeltaPacket extends DataPacket implements ClientboundPacket{
 	/**
 	 * @throws BinaryDataException
 	 */
-	private function maybeReadRotation(int $flag, PacketSerializer $in) : ?float{
+	private function maybeReadRotation(PacketSerializer $in) : ?float{
 		if($in->getBool()){
 			return $in->getRotationByte();
 		}
@@ -54,7 +55,17 @@ class MoveActorDeltaPacket extends DataPacket implements ClientboundPacket{
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->actorRuntimeId = $in->getActorRuntimeId();
-		//TODO
+		$this->xPos = $this->maybeReadCoord($in);
+		$this->yPos = $this->maybeReadCoord($in);
+		$this->zPos = $this->maybeReadCoord($in);
+		$this->xRot = $this->maybeReadRotation($in);
+		$this->yRot = $this->maybeReadRotation($in);
+		$this->zRot = $this->maybeReadRotation($in);
+		$this->onGround = $in->getBool();
+		$this->teleport = $in->getBool();
+		$this->forceMoveLocalEntity = $in->getBool();
+		$this->forceCompletion = $in->getBool();
+		$this->ticks = $in->getUnsignedVarLong();
 	}
 
 	private function maybeWriteCoord(?float $val, PacketSerializer $out) : void{
@@ -83,6 +94,7 @@ class MoveActorDeltaPacket extends DataPacket implements ClientboundPacket{
 		$out->putBool($this->teleport);
 		$out->putBool($this->forceMoveLocalEntity);
 		$out->putBool($this->forceCompletion);
+		$out->putUnsignedVarLong($this->ticks);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

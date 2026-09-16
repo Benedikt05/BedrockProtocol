@@ -41,8 +41,6 @@ class BossEventPacket extends DataPacket implements ClientboundPacket, Serverbou
 
 	public int $bossActorUniqueId;
 	public int $eventType;
-
-	public int $playerActorUniqueId;
 	public float $healthPercent;
 	public string $title;
 	public string $filteredTitle;
@@ -52,7 +50,6 @@ class BossEventPacket extends DataPacket implements ClientboundPacket, Serverbou
 	public static function create(
 		int $bossActorUniqueId,
 		int $eventId,
-		int $playerActorUniqueId,
 		float $healthPercent,
 		string $title,
 		int $color,
@@ -61,7 +58,6 @@ class BossEventPacket extends DataPacket implements ClientboundPacket, Serverbou
 		$result = new self;
 		$result->bossActorUniqueId = $bossActorUniqueId;
 		$result->eventType = $eventId;
-		$result->playerActorUniqueId = $playerActorUniqueId;
 		$result->healthPercent = $healthPercent;
 		$result->title = $title;
 		$result->filteredTitle = $title;
@@ -71,40 +67,39 @@ class BossEventPacket extends DataPacket implements ClientboundPacket, Serverbou
 	}
 
 	public static function show(int $bossActorUniqueId, string $title, float $healthPercent, bool $unused = false, int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		return self::create($bossActorUniqueId, self::TYPE_SHOW, 0, $healthPercent, $title, $color, $overlay);
+		return self::create($bossActorUniqueId, self::TYPE_SHOW, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function hide(int $bossActorUniqueId, int $playerActorUniqueId = 0, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		return self::create($bossActorUniqueId, self::TYPE_HIDE, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	public static function hide(int $bossActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_HIDE, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function registerPlayer(int $bossActorUniqueId, int $playerActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		return self::create($bossActorUniqueId, self::TYPE_REGISTER_PLAYER, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	public static function registerPlayer(int $bossActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_REGISTER_PLAYER, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function unregisterPlayer(int $bossActorUniqueId, int $playerActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		return self::create($bossActorUniqueId, self::TYPE_UNREGISTER_PLAYER, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	public static function unregisterPlayer(int $bossActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_UNREGISTER_PLAYER, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function healthPercent(int $bossActorUniqueId, float $healthPercent, int $playerActorUniqueId = 0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		return self::create($bossActorUniqueId, self::TYPE_HEALTH_PERCENT, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	public static function healthPercent(int $bossActorUniqueId, float $healthPercent, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_HEALTH_PERCENT, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function title(int $bossActorUniqueId, string $title, int $playerActorUniqueId = 0, float $healthPercent = 1.0, int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		return self::create($bossActorUniqueId, self::TYPE_TITLE, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	public static function title(int $bossActorUniqueId, string $title, float $healthPercent = 1.0, int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_TITLE, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function properties(int $bossActorUniqueId, bool $unused, int $color = BossBarColor::PURPLE, int $overlay = 0, int $playerActorUniqueId = 0, float $healthPercent = 1.0, string $title = "") : self{
-		return self::create($bossActorUniqueId, self::TYPE_PROPERTIES, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	public static function properties(int $bossActorUniqueId, int $color = BossBarColor::PURPLE, int $overlay = 0, float $healthPercent = 1.0, string $title = "") : self{
+		return self::create($bossActorUniqueId, self::TYPE_PROPERTIES, $healthPercent, $title, $color, $overlay);
 	}
 
-	public static function query(int $bossActorUniqueId, int $playerActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
-		return self::create($bossActorUniqueId, self::TYPE_QUERY, $playerActorUniqueId, $healthPercent, $title, $color, $overlay);
+	public static function query(int $bossActorUniqueId, float $healthPercent = 1.0, string $title = "", int $color = BossBarColor::PURPLE, int $overlay = 0) : self{
+		return self::create($bossActorUniqueId, self::TYPE_QUERY, $healthPercent, $title, $color, $overlay);
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->bossActorUniqueId = $in->getActorUniqueId();
-		$this->playerActorUniqueId = $in->getActorUniqueId();
 		$this->eventType = $in->getUnsignedVarInt();
 		$this->title = $in->getString();
 		$this->filteredTitle = $in->getString();
@@ -115,7 +110,6 @@ class BossEventPacket extends DataPacket implements ClientboundPacket, Serverbou
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putActorUniqueId($this->bossActorUniqueId);
-		$out->putActorUniqueId($this->playerActorUniqueId);
 		$out->putUnsignedVarInt($this->eventType);
 		$out->putString($this->title);
 		$out->putString($this->filteredTitle);

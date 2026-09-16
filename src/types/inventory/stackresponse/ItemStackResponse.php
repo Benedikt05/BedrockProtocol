@@ -48,15 +48,12 @@ final class ItemStackResponse{
 		$result = $in->getByte();
 		$requestId = $in->readItemStackRequestId();
 		$containerInfos = [];
-		$hasContainers = $in->getBool();
-		if($hasContainers){
-			$containersPresent = $in->getBool();
-			if($containersPresent){
-				for($i = 0, $len = $in->getUnsignedVarInt(); $i < $len; ++$i){
-					$containerInfos[] = ItemStackResponseContainerInfo::read($in);
-				}
+		if($in->getBool()){
+			for($i = 0, $len = $in->getUnsignedVarInt(); $i < $len; ++$i){
+				$containerInfos[] = ItemStackResponseContainerInfo::read($in);
 			}
 		}
+
 		return new self($result, $requestId, $containerInfos);
 	}
 
@@ -66,7 +63,6 @@ final class ItemStackResponse{
 		$hasContainers = count($this->containerInfos) !== 0;
 		$out->putBool($hasContainers);
 		if($hasContainers){
-			$out->putBool(true);
 			$out->putUnsignedVarInt(count($this->containerInfos));
 			foreach($this->containerInfos as $containerInfo){
 				$containerInfo->write($out);

@@ -62,10 +62,6 @@ class InventoryTransactionPacket extends DataPacket implements ClientboundPacket
 			}
 		}
 
-		if(!$in->getBool()){
-			throw new PacketDecodeException("Expected transaction type, but got none");
-		}
-
 		$transactionType = $in->getUnsignedVarInt();
 
 		$this->trData = match($transactionType){
@@ -76,9 +72,7 @@ class InventoryTransactionPacket extends DataPacket implements ClientboundPacket
 			ReleaseItemTransactionData::ID => new ReleaseItemTransactionData(),
 			default => throw new PacketDecodeException("Unknown transaction type $transactionType"),
 		};
-		if($in->getBool()){
-			$this->trData->decode($in, true);
-		}
+		$this->trData->decode($in, true);
 
 	}
 
@@ -92,10 +86,8 @@ class InventoryTransactionPacket extends DataPacket implements ClientboundPacket
 			}
 		}
 
-		$out->putBool(true);
 		$out->putUnsignedVarInt($this->trData->getTypeId());
 
-		$out->putBool(true);
 		$this->trData->encode($out, true);
 	}
 

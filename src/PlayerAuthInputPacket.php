@@ -266,16 +266,14 @@ class PlayerAuthInputPacket extends DataPacket implements ServerboundPacket{
 		$this->moveVecX = $in->getLFloat();
 		$this->moveVecZ = $in->getLFloat();
 		$this->headYaw = $in->getLFloat();
-		$this->inputFlags = new BitSet(66);
-		if($in->getBool()){
-			$count = $in->getUnsignedVarInt();
-			for($i = 0; $i < $count; ++$i){
-				$flag = $in->getVarInt();
-				if($flag < 0 || $flag >= 66){
-					throw new PacketDecodeException("Unknown input flag $flag");
-				}
-				$this->inputFlags->set($flag, true);
+		$this->inputFlags = new BitSet(PlayerAuthInputFlags::NUMBER_OF_FLAGS);
+		$count = $in->getUnsignedVarInt();
+		for($i = 0; $i < $count; ++$i){
+			$flag = $in->getVarInt();
+			if($flag < 0 || $flag >= PlayerAuthInputFlags::NUMBER_OF_FLAGS){
+				throw new PacketDecodeException("Unknown input flag $flag");
 			}
+			$this->inputFlags->set($flag, true);
 		}
 		$this->inputMode = $in->getUnsignedVarInt();
 		$this->playMode = $in->getUnsignedVarInt();
@@ -283,16 +281,13 @@ class PlayerAuthInputPacket extends DataPacket implements ServerboundPacket{
 		$this->interactRotation = $in->getVector2();
 		$this->tick = $in->getUnsignedVarLong();
 		$this->delta = $in->getVector3();
-		// @phpstan-ignore-next-line
-		if($in->getBool() && $in->getBool()){
+		if($in->getBool()){
 			$this->itemInteractionData = ItemInteractionData::read($in);
 		}
-		// @phpstan-ignore-next-line
-		if($in->getBool() && $in->getBool()){
+		if($in->getBool()){
 			$this->itemStackRequest = ItemStackRequest::read($in);
 		}
-		// @phpstan-ignore-next-line
-		if($in->getBool() && $in->getBool()){
+		if($in->getBool()){
 			$this->blockActions = [];
 			$max = $in->getUnsignedVarInt();
 			for($i = 0; $i < $max; ++$i){

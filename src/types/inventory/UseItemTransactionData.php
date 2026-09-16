@@ -35,6 +35,7 @@ class UseItemTransactionData extends TransactionData{
 	private BlockPosition $blockPosition;
 	private int $face;
 	private int $hotbarSlot;
+	private int $handSlot;
 	private ItemStackWrapper $itemInHand;
 	private Vector3 $playerPosition;
 	private Vector3 $clickPosition;
@@ -58,6 +59,10 @@ class UseItemTransactionData extends TransactionData{
 
 	public function getHotbarSlot() : int{
 		return $this->hotbarSlot;
+	}
+
+	public function getHandSlot() : int{
+		return $this->handSlot;
 	}
 
 	public function getItemInHand() : ItemStackWrapper{
@@ -88,6 +93,7 @@ class UseItemTransactionData extends TransactionData{
 		$this->blockPosition = $stream->getBlockPosition();
 		$this->face = $tr ? $stream->getByte() : $stream->getVarInt();
 		$this->hotbarSlot = $stream->getVarInt();
+		$this->handSlot = $stream->getByte();
 		$this->itemInHand = $tr ? $stream->getNetworkItemStackDescriptor() : $stream->getItemStackWrapper();
 		$this->playerPosition = $stream->getVector3();
 		$this->clickPosition = $stream->getVector3();
@@ -102,6 +108,7 @@ class UseItemTransactionData extends TransactionData{
 		$stream->putBlockPosition($this->blockPosition);
 		$tr ? $stream->putByte($this->face) : $stream->putVarInt($this->face);
 		$stream->putVarInt($this->hotbarSlot);
+		$stream->putByte($this->handSlot);
 		$tr ? $stream->putNetworkItemStackDescriptor($this->itemInHand) : $stream->putItemStackWrapper($this->itemInHand);
 		$stream->putVector3($this->playerPosition);
 		$stream->putVector3($this->clickPosition);

@@ -14,10 +14,8 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol\types\inventory;
 
-use pocketmine\network\mcpe\protocol\PacketDecodeException;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\utils\Binary;
-use pocketmine\utils\BinaryDataException;
 
 class NetworkInventoryAction{
 	public const SOURCE_CONTAINER = 0;
@@ -66,8 +64,8 @@ class NetworkInventoryAction{
 
 	public function read(PacketSerializer $packet) : NetworkInventoryAction{
 		$this->sourceType = $packet->getUnsignedVarInt();
-		$this->windowId = ($packet->getBool() && $packet->getBool()) ?  Binary::signByte($packet->getByte()) : 0;
-		$this->sourceFlags = ($packet->getBool() && $packet->getBool()) ? $packet->getUnsignedVarInt() : 0;
+		$this->windowId = $packet->getBool() ?  Binary::signByte($packet->getByte()) : 0;
+		$this->sourceFlags = $packet->getBool() ? $packet->getUnsignedVarInt() : 0;
 		$this->inventorySlot = $packet->getUnsignedVarInt();
 		$this->oldItem  = $packet->getNetworkItemStackDescriptor();
 		$this->newItem  = $packet->getNetworkItemStackDescriptor();

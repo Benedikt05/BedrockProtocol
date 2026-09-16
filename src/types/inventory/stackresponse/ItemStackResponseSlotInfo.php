@@ -46,7 +46,7 @@ final class ItemStackResponseSlotInfo{
 		$hotbarSlot = $in->getByte();
 		$count = $in->getByte();
 		$itemStackId = null;
-		if($in->getBool() && $in->getBool()){
+		if($in->getBool()){
 			$itemStackId = $in->readServerItemStackId();
 		}
 		$customName = $in->getString();
@@ -61,7 +61,6 @@ final class ItemStackResponseSlotInfo{
 		$out->putByte($this->hotbarSlot);
 		$out->putByte($this->count);
 		$out->putBool($stackId = $this->itemStackId !== null);
-		$out->putBool($stackId);
 		if($stackId){
 			$out->writeServerItemStackId($this->itemStackId);
 		}

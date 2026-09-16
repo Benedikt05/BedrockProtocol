@@ -34,14 +34,12 @@ final class PlayerAuthInputVehicleInfo{
 	public static function read(PacketSerializer $in) : self{
 		$vehicleRotationX = null;
 		$vehicleRotationZ = null;
-		// @phpstan-ignore-next-line
-		if($in->getBool() && $in->getBool()){
+		if($in->getBool()){
 			$vehicleRotationX = $in->getLFloat();
 			$vehicleRotationZ = $in->getLFloat();
 		}
 		$predictedVehicleActorUniqueId = null;
-		// @phpstan-ignore-next-line
-		if($in->getBool() && $in->getBool()){
+		if($in->getBool()){
 			$predictedVehicleActorUniqueId = $in->getActorUniqueId();
 		}
 		return new self($vehicleRotationX, $vehicleRotationZ, $predictedVehicleActorUniqueId);

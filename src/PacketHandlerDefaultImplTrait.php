@@ -849,4 +849,12 @@ trait PacketHandlerDefaultImplTrait{
 	public function handleServerScriptDebugDrawer(ServerScriptDebugDrawerPacket $packet) : bool{
 		return false;
 	}
+
+	public function handlePartyChanged(PartyChangedPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleVoxelShapes(VoxelShapesPacket $packet) : bool{
+		return false;
+	}
 }

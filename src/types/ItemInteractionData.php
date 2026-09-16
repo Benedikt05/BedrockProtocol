@@ -54,10 +54,8 @@ final class ItemInteractionData{
 			}
 		}
 		$transactionData = new UseItemTransactionData();
-		// @phpstan-ignore-next-line
-		if($in->getBool() && $in->getBool()){
-			$transactionData->decode($in, true);
-		}
+		$transactionData->decode($in, true);
+
 		return new ItemInteractionData($requestId, $requestChangedSlots, $transactionData);
 	}
 
@@ -69,6 +67,6 @@ final class ItemInteractionData{
 				$changedSlot->write($out);
 			}
 		}
-		$this->transactionData->encode($out);
+		$this->transactionData->encode($out, true);
 	}
 }

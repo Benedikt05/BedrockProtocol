@@ -27,7 +27,9 @@ class PlaySoundPacket extends DataPacket implements ClientboundPacket{
 	public float $volume;
 	public float $pitch;
 	private int $loopCount = 0;
+	public bool $bypassListenerRangeCheck = false;
 	public ?int $serverSoundHandle = null;
+	public ?float $playbackPositionSeconds = null;
 
 	/**
 	 * @generate-create-func
@@ -46,6 +48,7 @@ class PlaySoundPacket extends DataPacket implements ClientboundPacket{
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->soundName = $in->getString();
+		$this->soundName = $in->getString();
 		$blockPosition = $in->getBlockPosition();
 		$this->x = $blockPosition->getX() / 8;
 		$this->y = $blockPosition->getY() / 8;
@@ -53,7 +56,9 @@ class PlaySoundPacket extends DataPacket implements ClientboundPacket{
 		$this->volume = $in->getLFloat();
 		$this->pitch = $in->getLFloat();
 		$this->loopCount = $in->getVarInt();
+		$this->bypassListenerRangeCheck = $in->getBool();
 		$this->serverSoundHandle = $in->readOptional(fn() => $in->getLLong());
+		$this->playbackPositionSeconds = $in->readOptional(fn() => $in->getLFloat());
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -62,7 +67,9 @@ class PlaySoundPacket extends DataPacket implements ClientboundPacket{
 		$out->putLFloat($this->volume);
 		$out->putLFloat($this->pitch);
 		$out->putVarInt($this->loopCount);
+		$out->putBool($this->bypassListenerRangeCheck);
 		$out->writeOptional($this->serverSoundHandle, fn(int $serverSoundHandle) => $out->putLLong($serverSoundHandle));
+		$out->writeOptional($this->playbackPositionSeconds, fn(int $playbackPositionSeconds) => $out->putLFloat($playbackPositionSeconds));
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

@@ -11,14 +11,17 @@ class PartyChangedPacket extends DataPacket implements ServerboundPacket{
 	public const NETWORK_ID = ProtocolInfo::PARTY_CHANGED_PACKET;
 
 	public ?string $partyId = null;
+	public ?bool $leader = null;
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->partyId = $in->readOptional(fn() => $in->getString());
-		$in->getBool(); //leader
+		if($in->getBool()){
+			$this->partyId = $in->getString();
+			$this->leader = $in->getBool();
+		}
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->writeOptional($this->partyId, fn(string $partyId) => $out->putString($partyId));
+
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

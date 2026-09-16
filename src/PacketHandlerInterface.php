@@ -431,4 +431,8 @@ interface PacketHandlerInterface{
 	public function handleClientboundControlSchemeSet(ClientboundControlSchemeSetPacket $packet) : bool;
 
 	public function handleServerScriptDebugDrawer(ServerScriptDebugDrawerPacket $packet) : bool;
+
+	public function handlePartyChanged(PartyChangedPacket $packet) : bool;
+
+	public function handleVoxelShapes(VoxelShapesPacket $packet) : bool;
 }
