@@ -435,4 +435,8 @@ interface PacketHandlerInterface{
 	public function handlePartyChanged(PartyChangedPacket $packet) : bool;
 
 	public function handleVoxelShapes(VoxelShapesPacket $packet) : bool;
+
+	public function handleClientboundUpdateSoundData(ClientboundUpdateSoundDataPacket $packet) : bool;
+
+	public function handleRecordStarted(RecordStartedPacket $packet) : bool;
 }

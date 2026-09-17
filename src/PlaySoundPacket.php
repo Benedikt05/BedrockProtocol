@@ -34,7 +34,7 @@ class PlaySoundPacket extends DataPacket implements ClientboundPacket{
 	/**
 	 * @generate-create-func
 	 */
-	public static function create(string $soundName, float $x, float $y, float $z, float $volume, float $pitch/*, ?int $serverSoundHandle*/) : self{
+	public static function create(string $soundName, float $x, float $y, float $z, float $volume, float $pitch, int $loopCount = 0, bool $bypassListenerRangeCheck = false, ?int $serverSoundHandle = null, ?float $playbackPositionSeconds = null) : self{
 		$result = new self;
 		$result->soundName = $soundName;
 		$result->x = $x;
@@ -42,7 +42,10 @@ class PlaySoundPacket extends DataPacket implements ClientboundPacket{
 		$result->z = $z;
 		$result->volume = $volume;
 		$result->pitch = $pitch;
-		//$result->serverSoundHandle = $serverSoundHandle;
+		$result->loopCount = $loopCount;
+		$result->bypassListenerRangeCheck = $bypassListenerRangeCheck;
+		$result->serverSoundHandle = $serverSoundHandle;
+		$result->playbackPositionSeconds = $playbackPositionSeconds;
 		return $result;
 	}
 

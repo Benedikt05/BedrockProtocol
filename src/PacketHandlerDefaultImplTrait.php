@@ -857,4 +857,12 @@ trait PacketHandlerDefaultImplTrait{
 	public function handleVoxelShapes(VoxelShapesPacket $packet) : bool{
 		return false;
 	}
+
+	public function handleClientboundUpdateSoundData(ClientboundUpdateSoundDataPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleRecordStarted(RecordStartedPacket $packet) : bool{
+		return false;
+	}
 }

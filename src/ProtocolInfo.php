@@ -265,4 +265,6 @@ final class ProtocolInfo{
 	public const SERVER_SCRIPT_DEBUG_DRAWER_PACKET = 0x148;
 	public const VOXEL_SHAPES_PACKET = 0x151; //337
 	public const PARTY_CHANGED_PACKET = 0x156;
+	public const CLIENTBOUND_UPDATE_SOUND_DATA_PACKET = 0x15c;
+	public const RECORD_STARTED_PACKET = 0x160;
 }
