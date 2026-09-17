@@ -79,7 +79,7 @@ class LevelSoundEventPacket extends DataPacket implements ClientboundPacket, Ser
 		self::$stringToIdMap = $map;
 	}
 
-	public function getIdToStringMap() : array{
+	public static function getIdToStringMap() : array{
 		if(!isset(self::$idToStringMap)){
 			self::makeSoundMap();
 		}
