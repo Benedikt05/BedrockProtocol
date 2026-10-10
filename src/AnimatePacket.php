@@ -29,19 +29,21 @@ class AnimatePacket extends DataPacket implements ClientboundPacket, Serverbound
 	public int $actorRuntimeId;
 	public float $data = 0.0;
 	public ?string $swingSource = null;
+	public int $handSlot = 0;//main hand
 
-	public static function create(int $actorRuntimeId, int $actionId, float $data = 0.0, ?string $swingSource = null) : self{
+	public static function create(int $actorRuntimeId, int $actionId, float $data = 0.0, ?string $swingSource = null, int $handSlot = 0) : self{
 		$result = new self;
 		$result->actorRuntimeId = $actorRuntimeId;
 		$result->action = $actionId;
 		$result->data = $data;
 		$result->swingSource = $swingSource;
+		$result->handSlot = $handSlot;
 		return $result;
 	}
 
 	/** @deprecated */
 	public static function boatHack(int $actorRuntimeId, int $actionId, float $rowingTime) : self{
-		return self::create($actorRuntimeId, $actionId);
+		return self::create($actorRuntimeId, $actionId, 0, null, 0);
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
@@ -49,6 +51,7 @@ class AnimatePacket extends DataPacket implements ClientboundPacket, Serverbound
 		$this->actorRuntimeId = $in->getActorRuntimeId();
 		$this->data = $in->getLFloat();
 		$this->swingSource = $in->readOptional($in->getString(...));
+		$this->handSlot = $in->getByte();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -56,6 +59,7 @@ class AnimatePacket extends DataPacket implements ClientboundPacket, Serverbound
 		$out->putActorRuntimeId($this->actorRuntimeId);
 		$out->putLFloat($this->data);
 		$out->writeOptional($this->swingSource, $out->putString(...));
+		$out->putByte($this->handSlot);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

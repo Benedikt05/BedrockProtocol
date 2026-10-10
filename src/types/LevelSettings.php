@@ -155,6 +155,7 @@ final class LevelSettings{
 		$out->putVarInt($this->editorWorldType);
 		$out->putBool($this->createdInEditorMode);
 		$out->putBool($this->exportedFromEditorMode);
+		$out->putByte(0); //editorLevelMigrationVersion
 		$out->putVarInt($this->time);
 		$out->putUnsignedVarInt($this->eduEditionOffer);
 		$out->putBool($this->hasEduFeaturesEnabled);

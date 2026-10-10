@@ -34,6 +34,7 @@ class UseItemOnEntityTransactionData extends TransactionData{
 	private ItemStackWrapper $itemInHand;
 	private Vector3 $playerPosition;
 	private Vector3 $clickPosition;
+	private int $handSlot;
 
 	public function getActorRuntimeId() : int{
 		return $this->actorRuntimeId;
@@ -59,6 +60,10 @@ class UseItemOnEntityTransactionData extends TransactionData{
 		return $this->clickPosition;
 	}
 
+	public function getHandSlot() : int{
+		return $this->handSlot;
+	}
+
 	protected function decodeData(PacketSerializer $stream, bool $tr = false) : void{
 		$this->actorRuntimeId = $stream->getActorRuntimeId();
 		$this->actionType = $tr ? $stream->getVarInt() : $stream->getUnsignedVarInt();
@@ -66,6 +71,7 @@ class UseItemOnEntityTransactionData extends TransactionData{
 		$this->itemInHand = $tr ? $stream->getNetworkItemStackDescriptor() : $stream->getItemStackWrapper();
 		$this->playerPosition = $stream->getVector3();
 		$this->clickPosition = $stream->getVector3();
+		$this->handSlot = $stream->getByte();
 	}
 
 	protected function encodeData(PacketSerializer $stream, bool $tr = false) : void{
@@ -75,12 +81,13 @@ class UseItemOnEntityTransactionData extends TransactionData{
 		$tr ? $stream->putNetworkItemStackDescriptor($this->itemInHand) : $stream->putItemStackWrapper($this->itemInHand);
 		$stream->putVector3($this->playerPosition);
 		$stream->putVector3($this->clickPosition);
+		$stream->putByte($this->handSlot);
 	}
 
 	/**
 	 * @param NetworkInventoryAction[] $actions
 	 */
-	public static function new(array $actions, int $actorRuntimeId, int $actionType, int $hotbarSlot, ItemStackWrapper $itemInHand, Vector3 $playerPosition, Vector3 $clickPosition) : self{
+	public static function new(array $actions, int $actorRuntimeId, int $actionType, int $hotbarSlot, ItemStackWrapper $itemInHand, Vector3 $playerPosition, Vector3 $clickPosition, int $handSlot) : self{
 		$result = new self;
 		$result->actions = $actions;
 		$result->actorRuntimeId = $actorRuntimeId;
@@ -89,6 +96,7 @@ class UseItemOnEntityTransactionData extends TransactionData{
 		$result->itemInHand = $itemInHand;
 		$result->playerPosition = $playerPosition;
 		$result->clickPosition = $clickPosition;
+		$result->handSlot = $handSlot;
 		return $result;
 	}
 }

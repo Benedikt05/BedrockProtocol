@@ -140,6 +140,7 @@ class AddActorPacket extends DataPacket implements ClientboundPacket{
 		foreach($this->links as $link){
 			$out->putEntityLink($link);
 		}
+		$out->putBool(false); //passengerOfBlockData
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

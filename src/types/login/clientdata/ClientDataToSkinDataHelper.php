@@ -110,6 +110,9 @@ final class ClientDataToSkinDataHelper{
 		// EMOTE
 		"emote" => PersonaSkinPiece::PIECE_TYPE_EMOTE,
 		"persona_emote" => PersonaSkinPiece::PIECE_TYPE_EMOTE,
+		//COCO
+		"coco" => PersonaSkinPiece::PIECE_TYPE__COCO,
+		"persona_coco" => PersonaSkinPiece::PIECE_TYPE__COCO,
 		// UNSUPPORTED
 		"unsupported" => PersonaSkinPiece::PIECE_TYPE_UNSUPPORTED,
 	];

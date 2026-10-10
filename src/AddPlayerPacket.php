@@ -147,6 +147,7 @@ class AddPlayerPacket extends DataPacket implements ClientboundPacket{
 			$out->putEntityLink($link);
 		}
 
+		$out->putBool(false); //passengerOfBlockData
 		$out->putString($this->deviceId);
 		$out->putLInt($this->buildPlatform);
 	}

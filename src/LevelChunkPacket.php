@@ -32,6 +32,7 @@ class LevelChunkPacket extends DataPacket implements ClientboundPacket{
 	/** @var int[] */
 	private array $usedBlobHashes = [];
 	private string $extraPayload;
+	private bool $clientBiomeUpdate = false;
 
 	/**
 	 * @generate-create-func
@@ -91,6 +92,10 @@ class LevelChunkPacket extends DataPacket implements ClientboundPacket{
 		return $this->extraPayload;
 	}
 
+	public function isClientBiomeUpdate() : bool{
+		return $this->clientBiomeUpdate;
+	}
+
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->chunkPosition = ChunkPosition::read($in);
 		$this->dimensionId = $in->getVarInt();
@@ -109,6 +114,7 @@ class LevelChunkPacket extends DataPacket implements ClientboundPacket{
 		}
 
 		$this->extraPayload = $in->getString();
+		$this->clientBiomeUpdate = $in->getBool();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -128,6 +134,7 @@ class LevelChunkPacket extends DataPacket implements ClientboundPacket{
 		}
 
 		$out->putString($this->extraPayload);
+		$out->putBool($this->clientBiomeUpdate);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

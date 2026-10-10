@@ -64,6 +64,7 @@ class PlayerListPacket extends DataPacket implements ClientboundPacket{
 				$entry->actorUniqueId = $in->getActorUniqueId();
 				$entry->username = $in->getString();
 				$entry->xboxUserId = $in->getString();
+				$in->getString();//playFabId
 				$entry->platformChatId = $in->getString();
 				$entry->buildPlatform = $in->getLInt();
 				$entry->skinData = $in->getSkin();
@@ -94,6 +95,7 @@ class PlayerListPacket extends DataPacket implements ClientboundPacket{
 				$out->putActorUniqueId($entry->actorUniqueId);
 				$out->putString($entry->username);
 				$out->putString($entry->xboxUserId);
+				$out->putString("");//playFabId
 				$out->putString($entry->platformChatId);
 				$out->putLInt($entry->buildPlatform);
 				$out->putSkin($entry->skinData);

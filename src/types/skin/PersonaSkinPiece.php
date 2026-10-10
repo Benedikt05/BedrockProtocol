@@ -45,7 +45,8 @@ final class PersonaSkinPiece{
 	public const PIECE_TYPE_CAPES = 25;
 	public const PIECE_TYPE_CLASSIC_SKIN = 26;
 	public const PIECE_TYPE_EMOTE = 27;
-	public const PIECE_TYPE_UNSUPPORTED = 28;
+	public const PIECE_TYPE__COCO = 28;
+	public const PIECE_TYPE_UNSUPPORTED = 29;
 
 	public function __construct(
 		private string $pieceId,
