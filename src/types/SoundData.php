@@ -56,7 +56,8 @@ class SoundData{
 	}
 
 	public static function read(PacketSerializer $in) : self{
-		$type = $in->getLInt();
+		$type = $in->getUnsignedVarInt();
+		$in->getByte();
 
 		return match($type){
 			SoundDataType::STOP => self::stop(),
@@ -71,7 +72,8 @@ class SoundData{
 	}
 
 	public function write(PacketSerializer $out) : void{
-		$out->putLInt($this->type);
+		$out->putUnsignedVarInt($this->type);
+		$out->putByte($this->type);
 		switch($this->type){
 			case SoundDataType::STOP:
 			case SoundDataType::PAUSE:
