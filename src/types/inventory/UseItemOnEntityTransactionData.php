@@ -68,35 +68,35 @@ class UseItemOnEntityTransactionData extends TransactionData{
 		$this->actorRuntimeId = $stream->getActorRuntimeId();
 		$this->actionType = $tr ? $stream->getVarInt() : $stream->getUnsignedVarInt();
 		$this->hotbarSlot = $stream->getVarInt();
+		$this->handSlot = $stream->getByte();
 		$this->itemInHand = $tr ? $stream->getNetworkItemStackDescriptor() : $stream->getItemStackWrapper();
 		$this->playerPosition = $stream->getVector3();
 		$this->clickPosition = $stream->getVector3();
-		$this->handSlot = $stream->getByte();
 	}
 
 	protected function encodeData(PacketSerializer $stream, bool $tr = false) : void{
 		$stream->putActorRuntimeId($this->actorRuntimeId);
 		$tr ? $stream->putVarInt($this->actionType) : $stream->putUnsignedVarInt($this->actionType);
 		$stream->putVarInt($this->hotbarSlot);
+		$stream->putByte($this->handSlot);
 		$tr ? $stream->putNetworkItemStackDescriptor($this->itemInHand) : $stream->putItemStackWrapper($this->itemInHand);
 		$stream->putVector3($this->playerPosition);
 		$stream->putVector3($this->clickPosition);
-		$stream->putByte($this->handSlot);
 	}
 
 	/**
 	 * @param NetworkInventoryAction[] $actions
 	 */
-	public static function new(array $actions, int $actorRuntimeId, int $actionType, int $hotbarSlot, ItemStackWrapper $itemInHand, Vector3 $playerPosition, Vector3 $clickPosition, int $handSlot) : self{
+	public static function new(array $actions, int $actorRuntimeId, int $actionType, int $hotbarSlot, int $handSlot, ItemStackWrapper $itemInHand, Vector3 $playerPosition, Vector3 $clickPosition) : self{
 		$result = new self;
 		$result->actions = $actions;
 		$result->actorRuntimeId = $actorRuntimeId;
 		$result->actionType = $actionType;
 		$result->hotbarSlot = $hotbarSlot;
+		$result->handSlot = $handSlot;
 		$result->itemInHand = $itemInHand;
 		$result->playerPosition = $playerPosition;
 		$result->clickPosition = $clickPosition;
-		$result->handSlot = $handSlot;
 		return $result;
 	}
 }
