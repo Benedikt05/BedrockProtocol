@@ -16,7 +16,6 @@ namespace pocketmine\network\mcpe\protocol\types\inventory\stackrequest;
 
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\types\inventory\FullContainerName;
-use pocketmine\utils\Binary;
 
 final class ItemStackRequestSlotInfo{
 	public function __construct(
@@ -34,14 +33,13 @@ final class ItemStackRequestSlotInfo{
 	public static function read(PacketSerializer $in) : self{
 		$containerName = FullContainerName::read($in);
 		$slotId = $in->getByte();
-		$stackId = $in->getLInt();
+		$stackId = $in->readItemStackNetIdVariant();
 		return new self($containerName, $slotId, $stackId);
 	}
 
 	public function write(PacketSerializer $out) : void{
 		$this->containerName->write($out);
 		$out->putByte($this->slotId);
-		$out->putLInt($this->slotId);
 		$out->writeItemStackNetIdVariant($this->stackId);
 	}
 }

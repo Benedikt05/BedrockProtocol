@@ -39,15 +39,15 @@ final class GrindstoneStackRequestAction extends ItemStackRequestAction{
 	public function getRepetitions() : int{ return $this->repetitions; }
 
 	public static function read(PacketSerializer $in) : self{
-		$recipeId = $in->readRecipeNetId();
+		$recipeId = $in->getLInt();
 		$repetitions = $in->getByte();
-		$repairCost = $in->getVarInt($in);
+		$repairCost = $in->getVarInt();
 
 		return new self($recipeId, $repairCost, $repetitions);
 	}
 
 	public function write(PacketSerializer $out) : void{
-		$out->writeRecipeNetId($this->recipeId);
+		$out->putLInt($this->recipeId);
 		$out->putByte($this->repetitions);
 		$out->putVarInt($this->repairCost);
 	}

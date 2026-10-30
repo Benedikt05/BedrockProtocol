@@ -267,4 +267,5 @@ final class ProtocolInfo{
 	public const PARTY_CHANGED_PACKET = 0x156;
 	public const CLIENTBOUND_UPDATE_SOUND_DATA_PACKET = 0x15c;
 	public const RECORD_STARTED_PACKET = 0x160;
+	public const SERVERBOUND_CURSOR_ITEM_DRAG_PACKET = 0x166;
 }

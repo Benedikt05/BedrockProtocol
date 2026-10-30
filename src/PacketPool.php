@@ -242,6 +242,9 @@ class PacketPool{
 		$this->registerPacket(new ServerScriptDebugDrawerPacket());
 		$this->registerPacket(new VoxelShapesPacket());
 		$this->registerPacket(new PartyChangedPacket());
+		$this->registerPacket(new ClientboundUpdateSoundDataPacket());
+		$this->registerPacket(new RecordStartedPacket());
+		$this->registerPacket(new ServerboundCursorItemDragPacket());
 	}
 
 	public function registerPacket(Packet $packet) : void{

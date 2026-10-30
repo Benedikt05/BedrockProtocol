@@ -739,11 +739,11 @@ class PacketSerializer extends BinaryStream{
 	}
 
 	public function readRecipeNetId() : int{
-		return $this->getVarInt();
+		return $this->getUnsignedVarInt();
 	}
 
 	public function writeRecipeNetId(int $id) : void{
-		$this->putVarInt($id);
+		$this->putUnsignedVarInt($id);
 	}
 
 	public function readCreativeItemNetId() : int{

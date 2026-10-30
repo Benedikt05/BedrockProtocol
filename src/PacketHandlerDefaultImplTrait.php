@@ -865,4 +865,8 @@ trait PacketHandlerDefaultImplTrait{
 	public function handleRecordStarted(RecordStartedPacket $packet) : bool{
 		return false;
 	}
+
+	public function handleServerboundCursorItemDrag(ServerboundCursorItemDragPacket $packet) : bool{
+		return false;
+	}
 }

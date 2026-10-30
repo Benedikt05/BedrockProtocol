@@ -439,4 +439,6 @@ interface PacketHandlerInterface{
 	public function handleClientboundUpdateSoundData(ClientboundUpdateSoundDataPacket $packet) : bool;
 
 	public function handleRecordStarted(RecordStartedPacket $packet) : bool;
+
+	public function handleServerboundCursorItemDrag(ServerboundCursorItemDragPacket $packet) : bool;
 }
