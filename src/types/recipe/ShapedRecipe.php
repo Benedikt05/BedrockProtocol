@@ -126,7 +126,7 @@ final class ShapedRecipe extends RecipeWithTypeId{
 			$unlockingRequirement = RecipeUnlockingRequirement::read($in);
 		}
 
-		$recipeNetId = $in->getVarInt();
+		$recipeNetId = $in->readRecipeNetId();
 
 		return new self($recipeType, $recipeId, $input, $output, $uuid, $block, $priority, $symmetric, $unlockingRequirement, $recipeNetId);
 	}
@@ -154,6 +154,6 @@ final class ShapedRecipe extends RecipeWithTypeId{
 		$out->putBool($this->unlockingRequirement !== null);
 		$this->unlockingRequirement?->write($out);
 
-		$out->putVarInt($this->recipeNetId);
+		$out->writeRecipeNetId($this->recipeNetId);
 	}
 }

@@ -48,7 +48,7 @@ final class SmithingTrimRecipe extends RecipeWithTypeId{
 		$input = RecipeIngredient::read($in);
 		$addition = RecipeIngredient::read($in);
 		$blockName = $in->getString();
-		$recipeNetId = $in->getVarInt();
+		$recipeNetId = $in->readRecipeNetId();
 
 		return new self(
 			$typeId,
@@ -67,6 +67,6 @@ final class SmithingTrimRecipe extends RecipeWithTypeId{
 		$this->input->write($out);
 		$this->addition->write($out);
 		$out->putString($this->blockName);
-		$out->putVarInt($this->recipeNetId);
+		$out->writeRecipeNetId($this->recipeNetId);
 	}
 }
